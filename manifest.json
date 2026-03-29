@@ -1,0 +1,15 @@
+{
+  "name": "メブキテラス",
+  "short_name": "メブキテラス",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fcf9f2",
+  "theme_color": "#8fbc8f",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
