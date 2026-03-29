@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4RLB6D8G7G"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-4RLB6D8G7G');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>メブキテラス</title>
+    
+    <link rel="icon" href="favicon.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="favicon.webp">
+
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="メブキテラス">
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6605267054532191" crossorigin="anonymous"></script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('sw.js').then(function(registration) {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, function(err) {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #fcf9f2; --text-color: #5a4b43; --water-color: #89c4ff;
+            --fert-color: #e8b0b0; --primary-color: #8fbc8f; --modal-bg: rgba(90, 75, 67, 0.6);
+        }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        .app-container { background: #ffffff; width: 100%; max-width: 400px; height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.05); position: relative; overflow: hidden;}
+        
+        /* ヘッダー＆ボタン類 */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #ffffff; z-index: 10; border-bottom: 1px solid #eee; position: relative;}
+        .app-title { margin: 0; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; }
+        .app-logo { height: 35px; width: auto; vertical-align: middle; }
+        .icon-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-color); padding: 0; width: 30px; }
+        
+        /* スライドメニュー（きろく） */
+        .side-menu { position: absolute; top: 0; right: -100%; width: 85%; height: 100%; background: #faf8f5; z-index: 200; transition: right 0.3s ease; box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .side-menu.open { right: 0; }
+        .menu-header { display: flex; justify-content: space-between; padding: 20px; border-bottom: 2px solid #eee; }
+        .menu-content { flex: 1; padding: 10px; overflow-y: auto; }
+        .menu-content a { display: block; padding: 15px; text-decoration: none; color: var(--text-color); font-weight: bold; border-bottom: 1px solid #eee; text-align: left;}
+        .overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 150; }
+        .overlay.show { display: block; }
+
+        /* タブ */
+        .tabs { display: flex; background: #f4f1ea; padding: 10px; gap: 10px; z-index: 10; position: relative;}
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; color: var(--text-color); font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: #ffffff; color: var(--primary-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .view { display: none; flex: 1; padding: 20px; overflow-y: auto; position: relative; }
+        .view.active { display: block; }
+
+        /* ホーム・ガーデンの背景設定 */
+        #view-home { background-image: url('bg_home_1.webp'); background-size: cover; background-position: center; }
+        #view-garden { background-image: url('bg_garden_1.webp'); background-size: cover; background-position: center; position: relative; overflow: hidden; padding: 15px;}
+
+        /* ホーム */
+        .avatar-area { position: relative; height: 360px; margin-top: 40px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 20px; }
+        .avatar-img { width: 280px; height: 280px; border-radius: 30px; object-fit: contain; z-index: 1; transition: all 0.3s ease; }
+        .plant-stage { position: absolute; bottom: 260px; left: 50%; transform: translateX(-50%); max-width: 80px; height: auto; z-index: 2; transition: all 0.3s ease; }
+
+        /* もうすぐ咲きそう！吹き出し */
+        .almost-blooming { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background-color: #ff9800; color: white; padding: 6px 14px; border-radius: 16px; font-size: 0.9rem; font-weight: bold; z-index: 5; display: none; box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3); animation: floatSlow 2s ease-in-out infinite; }
+        .almost-blooming::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-width: 6px 6px 0; border-style: solid; border-color: #ff9800 transparent transparent transparent; }
+
+        /* アニメーション */
+        .raindrop { position: absolute; font-size: 2rem; top: -20px; z-index: 3; pointer-events: none; animation: rainFall 0.8s ease-in forwards; }
+        @keyframes rainFall { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(200px) scale(0.5); opacity: 0; } }
+        .sparkle { position: absolute; font-size: 2rem; z-index: 3; pointer-events: none; animation: floatUp 1.2s ease-out forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-80px) scale(1.2); opacity: 0; } }
+        @keyframes floatSlow { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-5px); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        /* プログレスバー・ボタン */
+        .progress-container { background: #f0ece1; border-radius: 10px; height: 14px; width: 85%; margin: 0 auto 10px; overflow: hidden; position: relative;}
+        .progress-bar { height: 100%; background: var(--primary-color); width: 0%; transition: width 0.5s ease; }
+        .progress-text { text-align: center; font-size: 0.85rem; margin-bottom: 20px; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); font-weight: bold; position: relative;}
+        
+        .main-record-btn { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(143, 188, 143, 0.3); position: relative;}
+        .harvest-btn { display: none; width: 100%; padding: 15px; background: #ffb6c1; color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; animation: pulse 1.5s infinite; position: relative;}
+
+        /* モーダル群 */
+        .modal { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--modal-bg); z-index: 300; justify-content: center; align-items: center; backdrop-filter: blur(2px); padding: 20px; box-sizing: border-box;}
+        .modal.bottom { align-items: flex-end; padding: 0; }
+        .modal-content { background: white; width: 100%; max-width: 360px; border-radius: 24px; padding: 20px; box-sizing: border-box; text-align: center; cursor: default; position:relative; max-height: 90vh; overflow-y: auto; overflow-x: hidden;}
+        .modal.bottom .modal-content { border-radius: 24px 24px 0 0; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* 記録フロー用 */
+        .step { display: none; } .step.active { display: block; }
+        .step h3 { margin-top: 0; color: var(--text-color); }
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .choice-btn { padding: 15px; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; cursor: pointer; color: var(--text-color); transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        
+        select, input[type="text"], input[type="datetime-local"], textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #eee; border-radius: 8px; box-sizing: border-box; font-size: 1rem; font-family: inherit; }
+        textarea { height: 80px; resize: none; }
+        .input-label { font-size: 0.9rem; color: #666; margin-bottom: 5px; display: block; text-align: left; font-weight: bold;}
+        .slider-label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; font-weight: bold; color: #666;}
+        
+        /* タグ */
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .tag-btn { padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; background: #faf8f5; color: #666; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .tag-btn.selected { background: #ffb6c1; color: white; border-color: #ffb6c1; font-weight: bold; }
+        .tag-btn.painful.selected { background: var(--water-color); border-color: var(--water-color); }
+        .display-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 12px; font-size: 0.75rem; color: #555; margin-right: 5px; margin-top: 5px; }
+        .custom-tag-input-group { display: flex; gap: 5px; margin-bottom: 15px; }
+        .custom-tag-input-group input { margin-bottom: 0; flex: 1; }
+        .custom-tag-input-group button { padding: 0 15px; background: #eee; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: var(--text-color); }
+
+        /* ガーデン */
+        .garden-flower { position: absolute; font-size: 4rem; cursor: grab; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1)); }
+        .garden-flower img { height: 4rem; width: auto; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+        
+        .new-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background-color: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; z-index: 5; pointer-events: none; animation: bounce 1s infinite alternate; }
+        .new-badge::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); border-width: 4px 4px 0; border-style: solid; border-color: #ff9800 transparent transparent transparent; }
+
+        /* 共通FAB（右下ボタン）のスタイル */
+        .fab-bottom-right { position: absolute; bottom: 25px; right: 20px; display: flex; gap: 10px; z-index: 100; }
+        .circle-fab {
+            background: #FF9800; color: white; border: none;
+            width: 55px; height: 55px; border-radius: 50%; font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
+            cursor: pointer; font-weight: bold;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.1;
+        }
+        .circle-fab span { font-size: 0.65rem; margin-top: 2px; }
+        .circle-fab.bg-btn { background: #89c4ff; box-shadow: 0 4px 10px rgba(137, 196, 255, 0.4); }
+
+        /* きろくタブ＆フィルター */
+        #view-log { background: #faf8f5; padding: 20px;}
+        .filter-toggle-btn { width: 100%; padding: 10px; background: #fff; border: 2px solid var(--primary-color); border-radius: 12px; font-weight: bold; cursor: pointer; color: var(--primary-color); margin-bottom: 15px; transition: 0.2s; }
+        .filter-panel { background: #ffffff; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; }
+        .filter-panel select, .filter-panel input[type="text"] { margin-bottom: 10px; padding: 8px; font-size: 0.9rem; }
+        .history-list-view { flex: 1; overflow-y: auto;}
+
+        /* 履歴・共通 */
+        .history-item { position: relative; background: #ffffff; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary-color); text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .history-item.painful { border-left-color: var(--fert-color); }
+        .history-meta { font-size: 0.8rem; color: #888; margin-bottom: 5px; padding-right: 20px; }
+        .history-text { font-size: 0.95rem; line-height: 1.4; }
+        
+        .delete-record-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ccc; font-size: 1.4rem; font-weight: bold; cursor: pointer; padding: 0; line-height: 1; }
+        .close-btn { width: 100%; padding: 12px; background: #eee; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; color: var(--text-color); }
+
+        .history-image {
+            width: 100%; max-height: 200px; object-fit: cover;
+            border-radius: 12px; margin-top: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 上部トースト通知 */
+        .toast-notification {
+            position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95); border: 2px solid var(--primary-color);
+            color: var(--text-color); font-weight: bold; padding: 12px 20px;
+            border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 2000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none; text-align: center; width: 85%; max-width: 320px;
+            white-space: pre-wrap; line-height: 1.5; font-size: 0.95rem;
+        }
+        .toast-notification.show { top: 20px; }
+
+        /* チュートリアル・ウォークスルー用スタイル */
+        .walkthrough-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--modal-bg); backdrop-filter: blur(2px);
+            z-index: 3000; display: none; flex-direction: column; overflow: hidden; pointer-events: auto;
+        }
+
+        .walkthrough-step { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: none; justify-content: center; align-items: center; pointer-events: none; 
+        }
+        .walkthrough-step.active { display: flex; }
+
+        .tutorial-image-card {
+            max-width: 85%; max-height: 75vh; object-fit: contain;
+            border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); pointer-events: auto;
+        }
+
+        .tutorial-intro { 
+            padding: 0; overflow: visible; max-width: 320px; width: 80%; text-align: left; 
+            background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); pointer-events: auto;
+            position: relative; margin: 0 auto; 
+        }
+        .intro-header { 
+            background-color: var(--primary-color); color: white; padding: 15px 20px; 
+            font-size: 1.2rem; font-weight: bold; margin: 0; border-radius: 16px 16px 0 0;
+        }
+        .intro-body { padding: 20px; color: #5a4b43; font-size: 0.95rem; line-height: 1.6; font-weight: bold; }
+        .intro-close { 
+            position: absolute; top: -15px; right: -15px; 
+            width: 44px; height: 44px; background-color: #925c4e; color: white; 
+            border: 3px solid white; border-radius: 50%; font-size: 1.8rem; 
+            cursor: pointer; display: flex; justify-content: center; align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10; 
+            line-height: 1; padding: 0 0 4px 0; font-family: Arial, sans-serif; pointer-events: auto;
+        }
+
+        .anim-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; opacity: 0; transform: translateY(15px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        
+        .walk-next-wrapper { position: absolute; bottom: 20px; right: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); cursor: pointer; pointer-events: auto; z-index: 3001; animation: slideInUp 0.3s ease-out 0.2s forwards; opacity: 0; }
+        .walk-next-btn { background: white; color: var(--text-color); font-weight: bold; padding: 12px 30px 12px 20px; font-size: 1.05rem; clip-path: polygon(0% 0%, 75% 0%, 100% 50%, 75% 100%, 0% 100%); }
+
+        .walk-prev-wrapper { position: absolute; bottom: 20px; left: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); cursor: pointer; pointer-events: auto; z-index: 3001; animation: slideInUp 0.3s ease-out 0.2s forwards; opacity: 0; }
+        .walk-prev-btn { background: white; color: var(--text-color); font-weight: bold; padding: 12px 20px 12px 30px; font-size: 1.05rem; clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 50%); }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .walk-skip-btn { position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255,255,255,0.6); color: white; font-weight: bold; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; pointer-events: auto; z-index: 3005; box-shadow: 0 2px 4px rgba(0,0,0,0.3); backdrop-filter: blur(2px); }
+        .walk-skip-btn:hover { background: rgba(255, 255, 255, 0.4); }
+
+        .walkthrough-dots { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; pointer-events: none; z-index: 3001; }
+        .walkthrough-dots .dot { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.4); border-radius: 50%; transition: background 0.2s; }
+        .walkthrough-dots .dot.active { background: #ffcc00; transform: scale(1.2); }
+
+        .loading-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(255,255,255,0.8); z-index: 4000;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            font-weight: bold; color: var(--primary-color);
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #eee; border-top: 4px solid var(--primary-color);
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* お花のアニメーション */
+        @keyframes flowerDelete {
+            0% { transform: scale(1); opacity: 1; }
+            30% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .flower-deleting { animation: flowerDelete 0.4s ease-out forwards !important; pointer-events: none; }
+        .flower-picking { transform: translateY(-15px) scale(1.1); transition: transform 0.2s; z-index: 10 !important; }
+        .flower-dropped { transition: transform 0.2s; }
+        
+        /* ココロスコア用スタイル */
+        .score-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
+        .score-circle { width: 40px; height: 40px; border-radius: 50%; background: #fcf9f2; border: 2px solid var(--primary-color); color: var(--primary-color); font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; margin: 0 auto; padding: 0; }
+        .score-circle:hover, .score-circle.active { background: var(--primary-color); color: white; }
+        #view-score { background: #faf8f5; padding: 20px; text-align: center; }
+        .chart-toggle-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .chart-toggle-btn { padding: 8px 16px; border: 2px solid var(--primary-color); background: white; color: var(--primary-color); border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .chart-toggle-btn.active { background: var(--primary-color); color: white; }
+        .chart-container { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        /* ココロスコアスライダー用のデザイン */
+        .score-slider-container { margin: 20px 0 30px; position: relative; padding: 0 10px; }
+        .custom-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            background: #eeeeee;
+            outline: none;
+            margin: 0;
+            padding: 0;
+        }
+        /* スライダーのつまみ（ハートマークの枠消し版） */
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 32px;
+            height: 32px;
+            /* transparentを指定して背景を透明にリセット */
+            background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23DE4852" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center center;
+            background-size: contain;
+            cursor: pointer;
+            border: none;
+            box-shadow: none; /* ブラウザ特有の枠や影を無効化 */
+            border-radius: 50%; 
+            filter: drop-shadow(0 2px 4px rgba(222, 72, 82, 0.4));
+        }
+        /* スライダーの下の数字と目盛り線 */
+        .slider-ticks {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 12px;
+            margin-top: 8px;
+            color: #999;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .slider-ticks span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .slider-ticks span::before {
+            content: '';
+            display: block;
+            width: 2px;
+            height: 8px;
+            background-color: #ccc;
+            margin-bottom: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app-container">
+    <div id="toast-notification" class="toast-notification"></div>
+
+    <div class="header" id="app-header">
+        <button class="icon-btn" id="bgm-btn" onclick="openVolumeModal()">🎵</button>
+        <h1 class="app-title"><img src="logo.webp" alt="メブキテラス" class="app-logo"></h1>
+        <button class="icon-btn" id="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+
+    <div class="tabs" id="app-tabs">
+        <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">ホーム</button>
+        <button class="tab-btn" id="tab-garden" onclick="switchTab('garden')">ガーデン</button>
+    </div>
+
+    <div id="view-home" class="view active">
+        
+        <div class="avatar-area" id="avatar-area">
+            <div id="almost-blooming" class="almost-blooming">もうすぐ咲きそう！</div>
+            <img src="grow1.webp" id="plant-seedling" class="plant-stage" style="display:none;" alt="苗木">
+            <img src="grow2.webp" id="plant-ivy" class="plant-stage" style="display:none;" alt="ツタ">
+            <img src="grow3.webp" id="plant-flower" class="plant-stage" style="display:none;" alt="花">
+            <img src="normal.webp" id="avatar-img" alt="アバター" class="avatar-img" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22240%22 height=%22240%22 viewBox=%220 0 240 240%22%3E%3Crect fill=%22%23eee%22 width=%22240%22 height=%22240%22 rx=%2230%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3E画像を同じフォルダに置いてね%3C/text%3E%3C/svg%3E'">
+        </div>
+        <div class="progress-container" id="progress-container"><div class="progress-bar" id="growth-bar"></div></div>
+        <div class="progress-text" id="progress-text">開花まであと: 40 エナジー</div>
+        <button class="harvest-btn" id="harvest-btn" onclick="harvestFlower()">🌸 お花をガーデンに植える</button>
+        
+        <button class="main-record-btn" id="record-btn" onclick="openRecordModal()">✏️ キモチを書く</button>
+        <div style="display: flex; gap: 10px; margin-top: 10px; width: 100%;">
+            <button class="main-record-btn" id="daily-goal-btn" style="flex: 1; margin-top: 0; padding: 12px 5px; font-size: 0.9rem; line-height: 1.4; border-radius: 16px; background-color: #fff; color: var(--primary-color); border: 2px solid var(--primary-color);" onclick="handleDailyGoalClick()">🌱 今日の<br>ココロの目標</button>
+            <button class="main-record-btn" id="daily-score-btn" style="flex: 1; margin-top: 0; padding: 12px 5px; font-size: 0.9rem; line-height: 1.4; border-radius: 16px; background-color: #fffafb; color: #ffb6c1; border: 2px solid #ffb6c1;" onclick="openScoreModal()">💓 今日の<br>ココロスコア</button>
+        </div>
+        <div class="fab-bottom-right">
+            <button class="circle-fab bg-btn" onclick="toggleHomeBg()">🖼️<br><span>背景</span></button>
+        </div>
+    </div>
+
+    <div id="view-garden" class="view">
+        <div id="garden-info-msg" style="position: relative; background:rgba(255,255,255,0.7); padding:10px 25px 10px 10px; border-radius:8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <button onclick="document.getElementById('garden-info-msg').style.display='none'" style="position: absolute; top: 5px; right: 5px; background: none; border: none; font-size: 1rem; font-weight: bold; color: #888; cursor: pointer; line-height: 1;">_</button>
+            <p style="text-align:center; color:#777; margin:0; line-height:1.5; font-size: 0.9rem;">
+                おはなは指で自由に動かせます。<br>
+                ポンと押すと思い出を見れます<br>
+                ４秒長押しで消すこともできます🌸
+            </p>
+        </div>
+
+        <div class="fab-bottom-right">
+            <button class="circle-fab" style="background-color: #f4f1ea; color: var(--text-color); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="alignFlowers()">🌸<br><span>整列</span></button>
+            <button class="circle-fab" id="garden-switch-btn" style="background-color: #ffb6c1; box-shadow: 0 4px 10px rgba(255, 182, 193, 0.4);" onclick="cycleGarden()">①<br><span>ガーデン</span></button>
+            <button class="circle-fab bg-btn" onclick="toggleGardenBg()">🖼️<br><span>背景</span></button>
+            <!--<button class="circle-fab" onclick="openShareModal()"　style="display: none;">📸<br><span>シェア</span></button>-->
+        </div>
+    </div>
+
+    <div id="view-log" class="view">
+        <h2 style="text-align:center; margin-top:0; color:var(--text-color);">これまでのキモチ</h2>
+        <button class="filter-toggle-btn" onclick="toggleFilter()">🔍 絞り込み検索を開く / 閉じる</button>
+        
+        <div class="filter-panel" id="filter-panel">
+            <div style="display:flex; gap:10px; margin-bottom:10px; justify-content: center; font-weight: bold; color: var(--text-color);">
+                <label style="cursor:pointer;"><input type="checkbox" id="filter-emotion-happy" checked onchange="updateFilterTagList(); updateHistoryView();">☀️ うれしい</label>
+                <label style="cursor:pointer;"><input type="checkbox" id="filter-emotion-painful" checked onchange="updateFilterTagList(); updateHistoryView();">🌧️ つらい</label>
+            </div>
+            <input type="text" id="filter-keyword" placeholder="フリーワードや #タグ で検索..." oninput="handleKeywordInput()">
+            <button id="toggle-tag-list-btn" onclick="toggleFilterTagList()" style="width:100%; padding: 8px; margin-bottom: 10px; background: #faf8f5; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; color: #666; font-size: 0.85rem; font-weight: bold;">🏷️ タグ一覧を見る</button>
+            <div id="filter-tag-list" class="tag-container" style="display:none; margin-bottom: 15px;"></div>
+            <div style="display:flex; gap:10px;">
+                <select id="filter-who" style="flex:1;" onchange="updateHistoryView()"><option value="">すべての人</option></select>
+                <select id="filter-category" style="flex:1;" onchange="updateHistoryView()">
+                    <option value="">すべての種類</option><option value="ことば">💬 ことば</option><option value="できごと">できごと</option><option value="プレゼント">🎁 プレゼント</option>
+                </select>
+            </div>
+            <div class="slider-label" style="margin-top:5px; font-weight:normal;"><span>感情の強さ（下限）</span><span id="filter-intensity-val">1 以上</span></div>
+            <input type="range" id="filter-intensity" min="1" max="10" value="1" oninput="document.getElementById('filter-intensity-val').innerText = this.value + ' 以上'; updateHistoryView()">
+        </div>
+        <div class="history-list-view" id="history-list"><p style="text-align:center; color:#888;">まだ記録がありません。</p></div>
+    </div>
+
+    <div class="overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+    <div class="side-menu" id="side-menu">
+        <div class="menu-header">
+            <h3 style="margin:0; color:var(--text-color);">メニュー</h3>
+            <button class="icon-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <div class="menu-content">
+            <a href="#" onclick="toggleMenu(); switchTab('log'); return false;">✏️ きろく一覧</a>
+            <a href="#" onclick="toggleMenu(); switchTab('score'); return false;">💓 ココロスコア</a>
+            <a href="#" onclick="toggleMenu(); openBackupModal(); return false;">📮 きろくの書き出し</a>
+            <a href="#" onclick="toggleMenu(); openFeedbackModal(); return false;">✉️ フィードバックを送る</a>
+            <a href="#" onclick="toggleMenu(); openAboutModal(); return false;">💡 このアプリについて</a>
+            <a href="#" onclick="toggleMenu(); openCreditModal(); return false;">📄 制作者・お借りした素材</a>
+            <a href="#" onclick="toggleMenu(); startTutorialReplay(); return false;" style="margin-top: 20px;">❓ つかいかた</a>
+            <a href="#" onclick="toggleMenu(); document.getElementById('add-home-modal').style.display='flex'; return false;">🏠 ホーム画面に追加</a>
+        </div>
+    </div>
+
+    <div id="view-score" class="view">
+        <h2 style="margin-top:0; color:var(--text-color);">これまでのココロスコア</h2>
+        <div class="chart-toggle-container">
+            <button class="chart-toggle-btn active" id="chart-week-btn" onclick="updateChartMode(7)">1週間</button>
+            <button class="chart-toggle-btn" id="chart-month-btn" onclick="updateChartMode(30)">1か月</button>
+        </div>
+        
+        <div class="chart-container" id="chart-swipe-area" style="touch-action: pan-y;">
+            <canvas id="score-chart" width="300" height="220" style="width: 100%; height: auto;"></canvas>
+        </div>
+        
+        <p style="font-size: 0.85rem; color: #888; margin-top: 15px; line-height: 1.5; text-align: left;">
+            ※毎日のスコアが折れ線グラフで表示されます。<br>元気な日も、そうでない日も、あなたの大切な記録です。<br>スコアは１年間記録されます。
+        </p>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 15px; gap: 8px;">
+            <button id="chart-prev-btn" onclick="changeChartPage(1)" style="flex: 1; padding: 10px 0; border: 2px solid #ccc; border-radius: 12px; background: white; font-weight: bold; color: #666; cursor: pointer; font-size: 0.85rem;">◀ 前の週</button>
+            <button id="chart-reset-btn" onclick="resetChartPage()" style="flex: 1; padding: 10px 0; border: 2px solid var(--primary-color); border-radius: 12px; background: #fffafb; font-weight: bold; color: var(--primary-color); cursor: pointer; font-size: 0.85rem;">最新へ戻る</button>
+            <button id="chart-next-btn" onclick="changeChartPage(-1)" style="flex: 1; padding: 10px 0; border: 2px solid #ccc; border-radius: 12px; background: white; font-weight: bold; color: #666; cursor: pointer; opacity: 0.5; pointer-events: none; font-size: 0.85rem;">次の週 ▶</button>
+        </div>
+    </div>
+
+<div class="modal bottom" id="score-modal" onclick="if(event.target === this) closeModal('score-modal')">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--text-color);">💓 今日のココロスコア</h3>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px; text-align:left;">今日の元気度はどれくらいですか？ハートを左右に動かして選んでみましょう。</p>
+            
+            <div id="score-guide-text" style="font-weight: bold; font-size: 1.05rem; margin-bottom: 20px; min-height: 1.5em; display: flex; align-items: center; justify-content: center; background: #faf8f5; border-radius: 12px; padding: 12px; transition: color 0.3s ease;">
+                ぼちぼち、自分のペースで🌱
+            </div>
+            
+            <div class="score-slider-container">
+                <input type="range" id="input-daily-score" class="custom-slider" min="1" max="10" value="5" oninput="updateSliderColor(this)">
+                <div class="slider-ticks">
+                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="close-btn" style="flex:1; margin-top:0;" onclick="closeModal('score-modal')">キャンセル</button>
+                <button class="main-record-btn" style="flex:2;" onclick="submitDailyScore()">記録する</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal bottom" id="daily-goal-modal" onclick="if(event.target === this) closeModal('daily-goal-modal')">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--text-color);">🌱 今日のココロの目標</h3>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px; text-align:left;">今日できそうな「自分を労る行動」を1つだけ選んでみましょう。達成すると少しエナジーがもらえます💧</p>
+            
+            <div class="custom-tag-input-group" style="margin-bottom: 15px;">
+                <input type="text" id="input-custom-daily-goal" placeholder="自由に入力する（例：本を1ページ読む）">
+                <button onclick="const v = document.getElementById('input-custom-daily-goal').value.trim(); if(v) { setDailyGoal(v); document.getElementById('input-custom-daily-goal').value = ''; }">決定</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; max-height: 40vh; overflow-y: auto; padding: 5px;">
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('☕ 温かい飲み物を飲む')">☕ 温かい飲み物を飲む</button>
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('☁️ 空を1分眺める')">☁️ 空を1分眺める</button>
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('✨ 自分をひとつ褒める')">✨ 自分をひとつ褒める</button>
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('🚶 少しさんぽする')">🚶 少しさんぽする</button>
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('☀️ 太陽の光をあびる')">☀️ 太陽の光をあびる</button>
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('🍃 部屋の換気をする')">🍃 部屋の換気をする</button>
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('😌 3回深呼吸をする')">😌 3回深呼吸をする</button>
+                <button class="choice-btn" style="flex-direction:row; justify-content:flex-start;" onclick="setDailyGoal('🤸 1分ストレッチをする')">🤸 1分ストレッチをする</button>
+            </div>
+            <button class="close-btn" style="margin-top:20px;" onclick="closeModal('daily-goal-modal')">キャンセル</button>
+        </div>
+    </div>
+
+    <div class="modal bottom" id="record-modal" onclick="if(event.target === this) closeModal('record-modal')">
+        <div class="modal-content">
+            <div class="step active" id="step1">
+                <h3>どんな気持ちですか？</h3>
+                <div class="choice-grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <button class="choice-btn" style="background-color:#ffb6c1; color:white; border-color:#ffb6c1; padding: 10px; font-size: 1.4rem; aspect-ratio: 1 / 1; justify-content: center;" onclick="setEmotion('happy')">
+                        <img src="happy.webp" alt="うれしい" style="height: 80px; margin-bottom: 10px;">
+                        うれしい </button>
+                    <button class="choice-btn" style="background-color:#89c4ff; color:white; border-color:#89c4ff; padding: 10px; font-size: 1.4rem; aspect-ratio: 1 / 1; justify-content: center;" onclick="setEmotion('painful')">
+                        <img src="unhappy.webp" alt="つらい" style="height: 70px; margin-bottom: 15px;">
+                        つらい </button>
+                </div>
+                <button class="close-btn" onclick="closeModal('record-modal')">キャンセル</button>
+            </div>
+            <div class="step" id="step2">
+                <h3>それは何についてですか？</h3>
+                <div class="choice-grid" id="category-grid"></div>
+                <button class="close-btn" onclick="prevStep(1)">戻る</button>
+            </div>
+            <div class="step" id="step3">
+                <label class="input-label">誰との出来事？</label>
+                <select id="input-who" onchange="handleWhoChange()"></select>
+                <input type="text" id="input-who-custom" style="display:none;" placeholder="人物名やニックネームを入力...">
+                <div class="slider-label" style="margin-top:10px;"><span>感情の強さ</span><span id="intensity-val">5</span></div>
+                <input type="range" id="input-intensity" min="1" max="10" value="5" oninput="document.getElementById('intensity-val').innerText = this.value">
+                <label class="input-label" style="margin-top:10px;">くわしく教えてください</label>
+                <textarea id="input-text" placeholder="何がありましたか？言葉にしてみましょう..."></textarea>
+                
+                <label class="input-label" style="margin-top:10px;">思い出の画像（任意）</label>
+                <input type="file" id="input-image" accept="image/*" onchange="previewImage(event)" style="display:none;">
+                <button class="choice-btn" style="width:100%; padding: 10px; margin-bottom: 10px; flex-direction: row; justify-content: center;" onclick="document.getElementById('input-image').click()">📷 画像を選ぶ</button>
+                <div id="image-preview-container" style="display:none; position:relative; margin-bottom: 15px;">
+                    <img id="image-preview" src="" style="width:100%; max-height:200px; object-fit:cover; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <button onclick="removeImage()" style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold;">✕</button>
+                </div>
+
+                <label class="input-label">今の気持ちに近いタグ（複数可）</label>
+                <div id="input-tags" class="tag-container"></div>
+                <div class="custom-tag-input-group"><input type="text" id="input-custom-tag" placeholder="新しいタグを作る..."><button onclick="addCustomTag()">追加</button></div>
+                <label class="input-label" style="margin-top:10px; color:#999; font-weight:normal;">いつの出来事？（任意）</label>
+                <input type="datetime-local" id="input-date" style="color:#666; max-width: 100%;">
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="close-btn" style="flex:1; margin-top:0;" onclick="prevStep(2)">戻る</button>
+                    <button class="main-record-btn" style="flex:2;" onclick="submitRecord()">記録して育てる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="volume-modal" onclick="if(event.target === this) closeModal('volume-modal')">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--primary-color);">🎵 音量設定</h3>
+            <div class="slider-label" style="margin-top:20px;"><span>BGM</span><span id="bgm-val-text">30%</span></div>
+            <input type="range" id="input-bgm-volume" min="0" max="100" value="30" oninput="changeBgmVolume(this.value)">
+            <div class="slider-label" style="margin-top:20px;"><span>効果音 (SE)</span><span id="se-val-text">100%</span></div>
+            <input type="range" id="input-se-volume" min="0" max="100" value="100" oninput="changeSeVolume(this.value)" onchange="playSE(audioBtn)">
+            <button class="close-btn" style="margin-top:25px;" onclick="closeModal('volume-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div class="modal" id="backup-modal" onclick="if(event.target === this) closeModal('backup-modal')">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--primary-color);">📮 きろくの書き出し・復元</h3>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:20px; text-align:left;">大切な記録をファイルとして保存します。万が一データが消えてしまった時や、別の端末にデータを引き継ぎたい時は、ここから復元できます。</p>
+            <button class="main-record-btn" style="margin-bottom:10px; background:#89c4ff; box-shadow:none;" onclick="exportText()">📄 読む用テキストで書き出す</button>
+            <button class="main-record-btn" style="margin-bottom:25px; box-shadow:none;" onclick="exportBackup()">📦 復元用データ(JSON)を書き出す</button>
+            <hr style="border:none; border-top:1px dashed #ccc; margin-bottom:20px;">
+            <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">保存したJSONファイルを読み込んでデータを上書き復元します</p>
+            <button class="choice-btn" style="width:100%; text-align:center; padding:12px;" onclick="triggerImport()">🔄 データを復元する</button>
+            <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importBackup(event)">
+            <hr style="border:none; border-top:1px dashed #ccc; margin-top:25px; margin-bottom:20px;">
+            <button class="main-record-btn" style="background:#ff4d4d; color:white; box-shadow:none;" onclick="deleteAllData()">🗑️ すべてのデータを削除する</button>
+            <button class="close-btn" style="margin-top:20px;" onclick="closeModal('backup-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div class="modal" id="feedback-modal" onclick="if(event.target === this) closeModal('feedback-modal')">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--primary-color);">✉️ フィードバックを送る</h3>
+            <p style="font-size:0.95rem; color:#666; margin-bottom:20px; text-align:left;">「メブキテラス」をご利用いただきありがとうございます。<br>アプリをもっと良くするためのご意見やご感想をお待ちしております！</p>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfd6T3J59CMIocdDjrwJfMQ0D1dq2his_lO3ZY0FjQ6OJT6EA/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="main-record-btn" style="display:block; text-align:center; text-decoration:none; box-sizing:border-box; margin-bottom:20px;">📝 フィードバックを送る</a>
+            <button class="close-btn" onclick="closeModal('feedback-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div class="modal bottom" id="flower-log-modal" onclick="if(event.target === this) closeModal('flower-log-modal')">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;"><h3 style="margin:0;">このお花の思い出 🌸</h3></div>
+            <div id="flower-log-list" style="max-height: 50vh; overflow-y: auto; margin-bottom: 15px;"></div>
+            <button class="close-btn" onclick="closeModal('flower-log-modal')">閉じる</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="resilience-modal" onclick="if(event.target === this) closeModal('resilience-modal')">
+        <div class="modal-content" style="background:#fffafb; border: 2px solid var(--fert-color);">
+            <div class="msg-title" style="font-weight:bold; font-size:1.2rem; color:var(--text-color); margin-bottom:15px;">✨ きれいな花が咲きました ✨</div>
+            <div class="msg-body" style="font-size:0.95rem; line-height:1.6; color:#666; margin-bottom:20px; text-align:left;">冷たい雨や深い泥のなかでも、<br>あなたの辛くかなしい気持ちは<br>豊かな栄養にかわって、<br>気高くてきれいなお花になりました！<br><br>すきな場所に飾ってあげましょう。</div>
+            <button class="main-record-btn" style="background:var(--fert-color);" onclick="closeModal('resilience-modal')">お花をガーデンに飾る</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="about-modal" onclick="if(event.target === this) closeModal('about-modal')">
+        <div class="modal-content">
+            <h3 style="text-align:center; margin-top:0; color:var(--primary-color);">このアプリについて</h3>
+            <div style="max-height: 60vh; overflow-y: auto; color:#555; text-align:left;">
+                <p>「メブキテラス」は、あなたのキモチを記録して、心の庭を育てるアプリです。</p>
+                <p>嬉しいことも、つらいことも、すべてがあなたを彩るお花の栄養になります。</p>
+                
+                <div style="font-size:0.85rem; margin: 20px 0; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 15px 0; line-height: 1.6;">
+                    <strong style="color: #d9534f;">ご注意：</strong><br>
+                    メブキテラスではブラウザごとにきろくを行っています。<br>
+                    そのため、別ブラウザや別媒体で開くときろくは共有されません。<br>
+                    また、ベータ版のため記録が急に消えたりするなどの予測不可能なエラーが起こる可能性があります。<br>
+                    できる限り大切な記録を書いたあとはバックアップをお取り頂き、復元可能な状態を残して頂くことをおすすめいたします。データが消えたことによる責任などは取れないため、予めご了承頂きますようお願いいたします。
+                </div>
+                
+                <div style="font-size:0.9rem;">
+                    <p style="margin-top:0;">今後、ご好評を頂ければ下記のような機能を拡充していきたいと考えています。</p>
+                    <ul style="padding-left: 20px; margin-bottom: 15px; line-height: 1.6;">
+                        <li>多言語対応</li>
+                        <li>アカウント＆きろく連動機能</li>
+                        <li>スマホアプリ化</li>
+                        <li>大切なひととのキロク共有機能</li>
+                        <li>鉢植えの上のキャラクターやガーデンのスキン変更機能</li>
+                        <li>キロクを伏せた状態でのガーデンやアバター共有機能など</li>
+                    </ul>
+                    <p>そのほかにも素敵なアイディアがあればどんどん取り入れて、皆でメブキテラスをよりよくできればと考えています！是非お気軽にフィードバックのご協力をお願いいたします！</p>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfd6T3J59CMIocdDjrwJfMQ0D1dq2his_lO3ZY0FjQ6OJT6EA/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="main-record-btn" style="display:block; text-align:center; text-decoration:none; box-sizing:border-box; margin-top:10px; margin-bottom:25px;">📝 フィードバックを送る</a>
+                    <p>また、少額からご支援を頂けますと今後の開発に向けてのモチベーションにつながりますので、もし気に入っていただけましたらリンク先だけでも覗いていただけますと幸いです。</p>
+                </div>
+                <a href="https://ko-fi.com/C0C44Z57F" target="_blank" rel="noopener noreferrer" class="main-record-btn" style="display:block; text-align:center; text-decoration:none; box-sizing:border-box; margin-top:15px; margin-bottom:10px; background-color: #FF5E5B; box-shadow: 0 4px 10px rgba(255, 94, 91, 0.3);">☕ ご支援はこちらから</a>
+            </div>
+            <button class="close-btn" onclick="closeModal('about-modal')">閉じる</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="add-home-modal" onclick="if(event.target === this) closeModal('add-home-modal')">
+        <div class="modal-content">
+            <h3 style="text-align:center; margin-top:0; color:var(--primary-color);">🏠 ホーム画面に追加</h3>
+            <div style="max-height: 60vh; overflow-y: auto; color:#555; text-align:left; line-height: 1.6;">
+                <p style="font-weight: bold; margin-top:0;">ホーム画面に追加すると、画面が広くなって本物のアプリのように使いやすくなります！</p>
+                
+                <div style="background: #fffafb; border: 2px solid var(--fert-color); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                    <strong style="color: #d9534f;">⚠️ 大切なお願い</strong><br>
+                    <span style="font-size: 0.85rem;">ホーム画面に追加したメブキテラスは、データが空っぽの状態で始まります。<br><br>
+                    必ず今の画面のメニューから<strong>「📮 きろくの書き出し」</strong>を選んでデータを保存し、新しく追加したメブキテラスを開いて<strong>「🔄 データを復元する」</strong>を行ってから使ってくださいね。</span>
+                </div>
+
+                <h4 style="color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 10px; margin-top: 0;">📱 iPhoneの方</h4>
+                <ol style="padding-left: 20px; font-size: 0.85rem; margin-bottom: 20px;">
+                    <li style="margin-bottom: 5px;">画面の下にある「四角から上矢印が飛び出しているマーク（共有ボタン）」を軽く押します。</li>
+                    <li style="margin-bottom: 5px;">メニューを少し上に動かして、「ホーム画面に追加」というボタンを押します。</li>
+                    <li>右上の「追加」を押せば完了です！</li>
+                </ol>
+
+                <h4 style="color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">📱 Androidの方</h4>
+                <ol style="padding-left: 20px; font-size: 0.85rem; margin-bottom: 10px;">
+                    <li style="margin-bottom: 5px;">画面の右上にある「３つの点（メニューボタン）」を軽く押します。</li>
+                    <li style="margin-bottom: 5px;">「ホーム画面に追加」または「アプリをインストール」というボタンを押します。</li>
+                    <li>「追加」を押せば完了です！<br><span style="color:#888;">※画面の下に「アプリをインストール」と案内が出た場合は、そこを押しても追加できます。</span></li>
+                </ol>
+            </div>
+            <button class="close-btn" style="margin-top:15px;" onclick="closeModal('add-home-modal')">閉じる</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="credit-modal" onclick="if(event.target === this) closeModal('credit-modal')">
+        <div class="modal-content">
+            <h3 style="text-align:center; margin-top:0; color:var(--primary-color);">制作者・お借りした素材</h3>
+            <div style="max-height: 60vh; overflow-y: auto; color:#555; text-align:left; line-height: 1.6;">
+                <p style="margin-bottom: 5px;"><strong>メブキテラス発案・デザイン：LOIRL</strong><br>
+                <a href="https://x.com/_LOIRL_" target="_blank" rel="noopener noreferrer" style="color: #6a9ac4; text-decoration: none;">https://x.com/_LOIRL_</a></p>
+                <a href="https://ko-fi.com/C0C44Z57F" target="_blank" rel="noopener noreferrer" class="main-record-btn" style="display:block; text-align:center; text-decoration:none; box-sizing:border-box; margin-top:10px; margin-bottom:20px; background-color: #FF5E5B; box-shadow: 0 4px 10px rgba(255, 94, 91, 0.3); padding: 10px;">☕ ご支援はこちらから</a>
+                <p style="margin-bottom: 5px;"><strong>BGM：創作堂さくら紅葉</strong><br>
+                <a href="https://yukizakura.net/" target="_blank" rel="noopener noreferrer" style="color: #6a9ac4; text-decoration: none;">https://yukizakura.net/</a></p>
+                <p style="margin-bottom: 5px;"><strong>SE：効果音ラボ 様</strong><br>
+                <a href="https://soundeffect-lab.info/" target="_blank" rel="noopener noreferrer" style="color: #6a9ac4; text-decoration: none;">https://soundeffect-lab.info/</a></p>
+            </div>
+            <button class="close-btn" onclick="closeModal('credit-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div class="modal" id="first-flower-modal" onclick="if(event.target === this) closeModal('first-flower-modal')">
+        <div class="tutorial-intro anim-fade-in-up">
+            <button class="intro-close" onclick="closeModal('first-flower-modal')">×</button>
+            <div class="intro-header">はじめてのおはな</div>
+            <div class="intro-body">
+                初めてのおはなが咲きましたね！<br><br>
+                どんどんココロのおはなを<br>
+                植えていきましょう！
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="first-record-modal" onclick="if(event.target === this) closeModal('first-record-modal')">
+        <div class="tutorial-intro anim-fade-in-up">
+            <button class="intro-close" onclick="closeModal('first-record-modal')">×</button>
+            <div class="intro-header">初めてのきろく！</div>
+            <div class="intro-body">
+                おめでとうございます！<br>
+                初めてのきろくができましたね！<br><br>
+                右上のメニューを押すと、<br>
+                きろく一覧を確認できますよ。
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="share-modal" onclick="if(event.target === this) closeModal('share-modal')">
+        <div class="modal-content" style="max-width: 90%; padding: 15px;">
+            <h3 style="margin-top:0; color:var(--primary-color);">ガーデンをシェア🌸</h3>
+            
+            <div style="background: #eee; border-radius: 12px; margin-bottom: 15px; overflow: hidden; min-height: 200px;">
+                <img id="share-preview" src="" style="width:100%; max-height:45vh; object-fit:contain; display: block;" alt="ガーデンのプレビュー">
+            </div>
+
+            <p style="font-size:0.85rem; color:#666; margin-bottom: 5px; text-align: left; font-weight: bold;">以下のテキストと一緒にシェアしよう！</p>
+            <textarea id="share-text-area" readonly style="font-size: 0.8rem; background: #faf8f5; margin-bottom: 15px; width: 100%; height: 60px;">ガーデンにココロのおはなを咲かせたよ！メブキテラスでみんなも自分だけのガーデンを作ってみよう🌸　
+https://kokoro-farm.netlify.app/</textarea>
+
+            <button class="main-record-btn" style="margin-bottom: 10px;" onclick="shareViaWebAPI()">📲 スマホの機能でシェア（X等）</button>
+            <button class="main-record-btn" style="background:#89c4ff; box-shadow:none; font-size:1rem;" onclick="copyAndDownloadFallback()">💾 画像を保存して自分で投稿</button>
+
+            <button class="close-btn" style="margin-top:15px;" onclick="closeModal('share-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div id="share-loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <div>ガーデンの画像を準備中...</div>
+    </div>
+
+    <canvas id="share-composition-canvas" width="800" height="1280" style="display: none;"></canvas>
+
+    <div id="walkthrough-container" class="walkthrough-overlay">
+        
+        <button class="walk-skip-btn" onclick="finishWalkthrough()">スキップ ⏭</button>
+
+        <div class="walkthrough-step" data-step="0">
+            <div class="tutorial-intro anim-fade-in-up">
+                <button class="intro-close" onclick="nextWalkthroughStep()">×</button>
+                <div class="intro-header">はじめに</div>
+                <div class="intro-body">
+                    はじめまして！<br>
+                    メブキテラスへようこそ。<br>
+                    はじめに、少しだけ説明<br>
+                    させてくださいね。<br><br>
+                    メブキテラスでは、うれしい<br>
+                    キモチとかなしいキモチを<br>
+                    きろくしておはなを育て、<br>
+                    自分だけのガーデンをつくれます。
+                </div>
+            </div>
+        </div>
+
+        <div class="walkthrough-step" data-step="1"><img src="info_1.webp" class="tutorial-image-card anim-fade-in-up" alt="説明1"></div>
+        <div class="walkthrough-step" data-step="2"><img src="info_2.webp" class="tutorial-image-card anim-fade-in-up" alt="説明2"></div>
+        <div class="walkthrough-step" data-step="3"><img src="info_3.webp" class="tutorial-image-card anim-fade-in-up" alt="説明3"></div>
+        <div class="walkthrough-step" data-step="4"><img src="info_4.webp" class="tutorial-image-card anim-fade-in-up" alt="説明4"></div>
+
+        <div class="walk-prev-wrapper" id="walk-prev-btn" style="display:none;" onclick="prevWalkthroughStep()">
+            <div class="walk-prev-btn" id="walk-prev-text">戻る</div>
+        </div>
+
+        <div class="walk-next-wrapper" id="walk-next-btn" style="display:none;" onclick="nextWalkthroughStep()">
+            <div class="walk-next-btn" id="walk-next-text">次へ</div>
+        </div>
+
+        <div id="walkthrough-pagination" class="walkthrough-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const audioBtn = new Audio('button.mp3');
+    const audioWater = new Audio('water.mp3');
+    const audioSoil = new Audio('soil.mp3');
+    const audioTwinkle = new Audio('twinkle.mp3');
+    const bgm = new Audio('bgm_normal.mp3');
+    bgm.loop = true; 
+
+    const audioFlowerDelete = new Audio('flower_delete.mp3');
+    const audioFlowerPick = new Audio('flower_pick.mp3');
+    const audioFlowerDrag = new Audio('flower_drag.mp3');
+    
+    let appData = { 
+        allRecords: [], currentFlowerLogs: [], currentEnergy: 0, waterEnergy: 0, fertEnergy: 0, 
+        gardenFlowers: [], customWhoList: [], customTagsHappy: [], customTagsPainful: [], 
+        hasSeenResiliencePopup: false, hasMadeFirstRecord: false, hasPlantedFirstFlower: false, 
+        bgmVolume: 0.3, seVolume: 1.0,
+        homeBgIndex: 1, gardenBgIndex: 1,
+        // 「今日のココロの目標」用データ
+        dailyGoal: null, dailyGoalDate: '', dailyGoalAchieved: false,
+        // ✨ ココロスコア用データを初期設定に追加
+        dailyScores: {}, hasMadeFirstScore: false 
+    };
+
+    let bgmVolume = 0.3;
+    let seVolume = 1.0;
+    
+    let homeBgIndex = 1;
+    let gardenBgIndex = 1;
+    
+    let currentDisplayGarden = 1;
+
+    function playSE(audioObj) { 
+        if (seVolume === 0) return; 
+        audioObj.volume = seVolume;
+        audioObj.currentTime = 0; 
+        audioObj.play().catch(e=>{}); 
+    }
+
+    function openVolumeModal() {
+        playSE(audioBtn);
+        document.getElementById('input-bgm-volume').value = bgmVolume * 100;
+        document.getElementById('bgm-val-text').innerText = Math.round(bgmVolume * 100) + '%';
+        document.getElementById('input-se-volume').value = seVolume * 100;
+        document.getElementById('se-val-text').innerText = Math.round(seVolume * 100) + '%';
+        document.getElementById('volume-modal').style.display = 'flex';
+    }
+
+    function changeBgmVolume(val) {
+        bgmVolume = val / 100;
+        bgm.volume = bgmVolume;
+        document.getElementById('bgm-val-text').innerText = val + '%';
+        if(bgmVolume > 0 && bgm.paused) { bgm.play().catch(e=>{}); }
+        else if (bgmVolume === 0 && !bgm.paused) { bgm.pause(); }
+        appData.bgmVolume = bgmVolume;
+        saveData();
+    }
+
+    function changeSeVolume(val) {
+        seVolume = val / 100;
+        document.getElementById('se-val-text').innerText = val + '%';
+        appData.seVolume = seVolume;
+        saveData();
+    }
+
+    function toggleHomeBg() {
+        playSE(audioBtn);
+        homeBgIndex = homeBgIndex === 1 ? 2 : 1;
+        document.getElementById('view-home').style.backgroundImage = `url('bg_home_${homeBgIndex}.webp')`;
+        appData.homeBgIndex = homeBgIndex;
+        saveData();
+    }
+
+    function toggleGardenBg() {
+        playSE(audioBtn);
+        gardenBgIndex = gardenBgIndex === 1 ? 2 : 1;
+        document.getElementById('view-garden').style.backgroundImage = `url('bg_garden_${gardenBgIndex}.webp')`;
+        appData.gardenBgIndex = gardenBgIndex;
+        saveData();
+    }
+
+    function cycleGarden() {
+        playSE(audioBtn);
+        let maxGarden = Math.floor((appData.gardenFlowers.length - 1) / 20) + 1;
+        if (maxGarden < 1) maxGarden = 1;
+        if (maxGarden > 5) maxGarden = 5;
+        
+        currentDisplayGarden++;
+        if (currentDisplayGarden > maxGarden) {
+            currentDisplayGarden = 1;
+        }
+        
+        const numChar = ['①', '②', '③', '④', '⑤'][currentDisplayGarden - 1];
+        if (document.getElementById('garden-switch-btn')) {
+            document.getElementById('garden-switch-btn').innerHTML = `${numChar}<br><span>ガーデン</span>`;
+        }
+        
+        restoreGarden();
+    }
+
+    function showCustomToast(text) {
+        const toast = document.getElementById('toast-notification');
+        toast.innerText = text;
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 4000);
+    }
+
+    function updateDailyGoalButton() {
+        const btn = document.getElementById('daily-goal-btn');
+        if (!btn) return;
+        if (!appData.dailyGoal) {
+            btn.innerHTML = "🌱 今日の<br>ココロの目標";
+            btn.style.backgroundColor = "#fff";
+            btn.style.color = "var(--primary-color)";
+            btn.style.border = "2px solid var(--primary-color)";
+        } else if (!appData.dailyGoalAchieved) {
+            btn.innerHTML = `🌱 今日の目標<br><span style="font-size:0.75rem; display:block; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${appData.dailyGoal}</span>`;
+            btn.style.backgroundColor = "#fff";
+            btn.style.color = "#ff9800"; 
+            btn.style.border = "2px solid #ff9800";
+        } else {
+            btn.innerHTML = "💮 今日も<br>えらい！";
+            btn.style.backgroundColor = "#ffb6c1"; 
+            btn.style.color = "white";
+            btn.style.border = "2px solid #ffb6c1";
+        }
+    }
+
+    function handleDailyGoalClick() {
+        playSE(audioBtn);
+        if (!appData.dailyGoal) {
+            document.getElementById('daily-goal-modal').style.display = 'flex';
+        } else if (!appData.dailyGoalAchieved) {
+            if(appData.currentEnergy >= maxEnergy) { 
+                alert("お花がいっぱいに育っています！先にガーデンに植えてあげてね。"); 
+                return; 
+            }
+            appData.dailyGoalAchieved = true;
+            
+            appData.currentEnergy += 10;
+            if(appData.currentEnergy > maxEnergy) appData.currentEnergy = maxEnergy;
+            appData.waterEnergy += 10;
+
+            const now = new Date();
+            const dateStr = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate(); 
+            const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0'); 
+            
+            const goalRecord = {
+                id: Date.now() + Math.random().toString(36).substr(2, 5),
+                emotion: 'happy',
+                category: '目標達成',
+                who: '自分自身',
+                intensity: 10,
+                text: appData.dailyGoal,
+                date: dateStr,
+                time: timeStr,
+                tags: ['今日のココロの目標'],
+                image: null,
+                isGoal: true
+            };
+            appData.allRecords.unshift(goalRecord);
+            appData.currentFlowerLogs.push(goalRecord);
+            
+            saveData();
+            updateDailyGoalButton();
+            updateHistoryView(); 
+            
+            playInteraction('happy'); 
+            setTimeout(() => checkGrowth(false), 1000);
+            
+            showCustomToast("目標達成！よくできました💮\nエナジーが 10 たまりました💧");
+        } else {
+            showCustomToast("今日の目標は達成済みです！\n明日も自分のペースで頑張りましょう✨");
+        }
+    }
+
+    function setDailyGoal(goalStr) {
+        playSE(audioBtn);
+        appData.dailyGoal = goalStr;
+        appData.dailyGoalAchieved = false;
+        appData.dailyGoalDate = new Date().toLocaleDateString('ja-JP');
+        saveData();
+        closeModal('daily-goal-modal');
+        updateDailyGoalButton();
+        showCustomToast(`今日の目標を「${goalStr}」に設定しました！\nできたらボタンを押してね🌱`);
+    }
+
+    function showGardenChangeToast(index) {
+        let text = "";
+        if (index === 1) {
+            text = "ひとつめのガーデンに戻りました🌸";
+        } else if (index === 2) {
+            text = "ふたつめのガーデンに移動しました！\nここにもたくさんのおはなが咲きますように！";
+        } else if (index === 3) {
+            text = "みっつめのガーデンに移動しました！\n少しずつ、心のお庭が広がっていますね🌱";
+        } else if (index === 4) {
+            text = "よっつめのガーデンに移動しました！\n今まで歩んできた、たくさんの記録の証です✨";
+        } else if (index === 5) {
+            text = "いつつめのガーデンに移動しました！\nここは最後のガーデン。あなただけのおはなで満たしましょう🌸";
+        }
+        showCustomToast(text);
+    }
+
+    function alignFlowers() {
+        playSE(audioBtn);
+        
+        const currentFlowers = appData.gardenFlowers.filter(f => (f.gardenIndex || 1) === currentDisplayGarden);
+        if (currentFlowers.length === 0) return;
+        currentFlowers.sort((a, b) => a.id - b.id);
+
+        const gardenEl = document.getElementById('view-garden');
+        const gW = gardenEl.clientWidth || 375;
+        const gH = gardenEl.clientHeight || 600;
+
+        const startY = 80;
+        const endY = gH - 120; 
+        const startX = 20;
+        const endX = gW - 20;
+        
+        const cols = 4;
+        const rows = 5;
+        
+        const stepX = (endX - startX) / cols;
+        const stepY = (endY - startY) / rows;
+
+        currentFlowers.forEach((f, index) => {
+            const r = Math.floor(index / cols);
+            const c = index % cols;
+            
+            const posX = startX + (c * stepX) + (stepX / 2) - 32; 
+            const posY = startY + (r * stepY) + (stepY / 2) - 32;
+
+            const target = appData.gardenFlowers.find(flower => flower.id === f.id);
+            if (target) {
+                target.left = posX + 'px';
+                target.top = posY + 'px';
+            }
+        });
+
+        saveData();
+        restoreGarden();
+    }
+
+    const maxEnergy = 40; 
+    let tempRecord = { id: '', emotion: '', category: '', who: '', intensity: 5, text: '', date: '', tags: [], image: null }; 
+    let currentOpenFlowerId = null;
+
+    let currentWalkthroughStep = 0;
+    const totalWalkthroughSteps = 5; 
+    const walkthroughStorageKey = 'kokoroFarmWalkthroughSeen_v25'; 
+    let isTutorialReplay = false;
+
+    const barEl = document.getElementById('growth-bar');
+    const progressTextEl = document.getElementById('progress-text');
+    const harvestBtn = document.getElementById('harvest-btn');
+    const avatarImg = document.getElementById('avatar-img');
+    const bubbleEl = document.getElementById('almost-blooming');
+    const seedlingImg = document.getElementById('plant-seedling');
+    const ivyImg = document.getElementById('plant-ivy');
+    const flowerImg = document.getElementById('plant-flower');
+
+    window.onload = () => {
+        try {
+            const savedData = localStorage.getItem('kokoroFarmData');
+            if (savedData) {
+                appData = { ...appData, ...JSON.parse(savedData) };
+                if(!appData.customTagsHappy) appData.customTagsHappy = [];
+                if(!appData.customTagsPainful) appData.customTagsPainful = [];
+                if(!appData.dailyScores) appData.dailyScores = {};
+                if(appData.hasMadeFirstRecord === undefined) appData.hasMadeFirstRecord = (appData.allRecords.length > 0); 
+                if(appData.hasPlantedFirstFlower === undefined) appData.hasPlantedFirstFlower = (appData.gardenFlowers.length > 0); 
+                
+                if(appData.bgmVolume !== undefined) bgmVolume = appData.bgmVolume;
+                if(appData.seVolume !== undefined) seVolume = appData.seVolume;
+                bgm.volume = bgmVolume;
+
+                if(appData.homeBgIndex !== undefined) homeBgIndex = appData.homeBgIndex;
+                if(appData.gardenBgIndex !== undefined) gardenBgIndex = appData.gardenBgIndex;
+
+                appData.allRecords.forEach(rec => { if(!rec.id) rec.id = Date.now() + Math.random().toString(36).substr(2, 5); });
+                appData.currentFlowerLogs.forEach(rec => { if(!rec.id) rec.id = Date.now() + Math.random().toString(36).substr(2, 5); });
+                
+                appData.gardenFlowers.forEach((f, index) => { 
+                    if(f.logs) f.logs.forEach(rec => { if(!rec.id) rec.id = Date.now() + Math.random().toString(36).substr(2, 5); }); 
+                    if (!f.gardenIndex) f.gardenIndex = Math.floor(index / 20) + 1;
+                });
+            }
+        } catch(e) { console.error("データ復元エラー", e); }
+        
+        let todayStr = new Date().toLocaleDateString('ja-JP');
+        if (appData.dailyGoalDate !== todayStr) {
+            appData.dailyGoal = null;
+            appData.dailyGoalAchieved = false;
+            appData.dailyGoalDate = todayStr;
+            saveData();
+        }
+        updateDailyGoalButton();
+        updateDailyScoreButton();
+        
+        let maxG = Math.floor((appData.gardenFlowers.length - 1) / 20) + 1;
+        if (maxG < 1) maxG = 1;
+        if (maxG > 5) maxG = 5;
+        currentDisplayGarden = maxG;
+        
+        const numChar = ['①', '②', '③', '④', '⑤'][currentDisplayGarden - 1];
+        if(document.getElementById('garden-switch-btn')) {
+            document.getElementById('garden-switch-btn').innerHTML = `${numChar}<br><span>ガーデン</span>`;
+        }
+
+        document.getElementById('view-home').style.backgroundImage = `url('bg_home_${homeBgIndex}.webp')`;
+        document.getElementById('view-garden').style.backgroundImage = `url('bg_garden_${gardenBgIndex}.webp')`;
+
+        initWhoSelect(); updateFilterTagList(); restoreGarden(); updateHistoryView(); checkGrowth(true); 
+
+        if(bgmVolume > 0) { bgm.play().catch(e=>{}); }
+
+        if (!localStorage.getItem(walkthroughStorageKey)) {
+            document.getElementById('walkthrough-container').style.display = 'flex';
+            setTimeout(() => { showWalkthroughStep(0); }, 100);
+        }
+    };
+
+    function saveData() { localStorage.setItem('kokoroFarmData', JSON.stringify(appData)); }
+
+    function toggleMenu() { playSE(audioBtn); document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('show'); }
+    
+    function switchTab(tabId) { 
+        playSE(audioBtn); 
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active')); 
+        document.querySelectorAll('.view').forEach(view => view.classList.remove('active')); 
+        
+        if(tabId === 'home') { 
+            document.querySelector('.tabs .tab-btn:nth-child(1)').classList.add('active'); 
+        }
+        if(tabId === 'garden') { 
+            document.querySelector('.tabs .tab-btn:nth-child(2)').classList.add('active'); 
+            document.getElementById('garden-info-msg').style.display = 'block';
+        }
+        
+        document.getElementById('view-' + tabId).classList.add('active'); 
+        if(tabId === 'log') updateHistoryView();
+        if(tabId === 'score') updateChartMode(7);
+    }
+
+    function initWhoSelect() {
+        const baseOptions = `<option value="自分自身">自分自身</option><option value="家族">家族</option><option value="友達">友達</option><option value="パートナー">パートナー</option><option value="職場の人">職場の人</option>`;
+        let customOptions = '';
+        if(appData.customWhoList) { appData.customWhoList.forEach(name => { customOptions += `<option value="${name}">${name}</option>`; }); }
+        document.getElementById('input-who').innerHTML = baseOptions + customOptions + `<option value="その他">その他（自由入力）</option>`;
+        document.getElementById('filter-who').innerHTML = `<option value="">すべての人</option>` + baseOptions + customOptions;
+    }
+    function handleWhoChange() { document.getElementById('input-who-custom').style.display = document.getElementById('input-who').value === 'その他' ? 'block' : 'none'; }
+    function openRecordModal() { playSE(audioBtn); if(appData.currentEnergy >= maxEnergy) { alert("お花がいっぱいに育っています！先にガーデンに植えてあげてね。"); return; } document.getElementById('record-modal').style.display = 'flex'; const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('input-date').value = now.toISOString().slice(0,16); showStep(1); }
+    function openAboutModal() { playSE(audioBtn); document.getElementById('about-modal').style.display = 'flex'; }
+    function openCreditModal() { playSE(audioBtn); document.getElementById('credit-modal').style.display = 'flex'; }
+    function openBackupModal() { playSE(audioBtn); document.getElementById('backup-modal').style.display = 'flex'; }
+    function openFeedbackModal() { playSE(audioBtn); document.getElementById('feedback-modal').style.display = 'flex'; }
+    
+    function closeModal(modalId) { 
+        playSE(audioBtn); 
+        document.getElementById(modalId).style.display = 'none'; 
+        if(modalId === 'record-modal') { 
+            document.getElementById('input-text').value = ''; 
+            document.getElementById('input-intensity').value = 5; 
+            document.getElementById('intensity-val').innerText = '5'; 
+            document.getElementById('input-who').selectedIndex = 0; 
+            handleWhoChange(); 
+            document.getElementById('input-custom-tag').value = ''; 
+            tempRecord.tags = []; 
+            removeImage(); 
+        } 
+        if(modalId === 'flower-log-modal' || modalId === 'daily-goal-modal') { currentOpenFlowerId = null; } 
+    }
+    
+    function showStep(stepNum) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('step' + stepNum).classList.add('active'); }
+    function prevStep(stepNum) { playSE(audioBtn); showStep(stepNum); }
+    const defaultTagsHappy = ["幸せ", "刺激になった", "モチベーション向上", "温かい気持ちになった", "大好き", "今日のココロの目標"];
+    const defaultTagsPainful = ["ひどい", "落ち込んだ", "モチベーション低下", "悲しい", "怒り"];
+    function setEmotion(emotion) { playSE(audioBtn); tempRecord.emotion = emotion; const grid = document.getElementById('category-grid'); grid.innerHTML = ''; const categories = emotion === 'happy' ? [{id:'word', label:'💬 ことば'}, {id:'event', label:'🎉 できごと'}, {id:'present', label:'🎁 プレゼント'}] : [{id:'word', label:'💬 ことば'}, {id:'event', label:'🌧 できごと'}]; categories.forEach(cat => { const btn = document.createElement('button'); btn.className = 'choice-btn'; btn.innerText = cat.label; btn.onclick = () => { playSE(audioBtn); tempRecord.category = cat.label; prepareStep3Tags(); showStep(3); }; grid.appendChild(btn); }); showStep(2); }
+    function addCustomTag() { playSE(audioBtn); const input = document.getElementById('input-custom-tag'); const newTag = input.value.trim(); if(!newTag) return; if (tempRecord.emotion === 'happy') { if (!appData.customTagsHappy.includes(newTag)) appData.customTagsHappy.push(newTag); } else { if (!appData.customTagsPainful.includes(newTag)) appData.customTagsPainful.push(newTag); } if (!tempRecord.tags.includes(newTag)) tempRecord.tags.push(newTag); saveData(); input.value = ''; prepareStep3Tags(); }
+    function prepareStep3Tags() { if(!tempRecord.tags) tempRecord.tags = []; const container = document.getElementById('input-tags'); container.innerHTML = ''; const baseTags = tempRecord.emotion === 'happy' ? defaultTagsHappy : defaultTagsPainful; const customTags = tempRecord.emotion === 'happy' ? appData.customTagsHappy : appData.customTagsPainful; const allTags = [...baseTags, ...customTags]; const tagClass = tempRecord.emotion === 'happy' ? '' : 'painful'; allTags.forEach(tagName => { const btn = document.createElement('button'); btn.className = 'tag-btn'; btn.innerText = '#' + tagName; if(tempRecord.tags.includes(tagName)) { btn.classList.add('selected'); if(tagClass) btn.classList.add(tagClass); } btn.onclick = () => { playSE(audioBtn); btn.classList.toggle('selected'); if(tagClass) btn.classList.toggle(tagClass); if(btn.classList.contains('selected')) { if(!tempRecord.tags.includes(tagName)) tempRecord.tags.push(tagName); } else { tempRecord.tags = tempRecord.tags.filter(t => t !== tagName); } }; container.appendChild(btn); }); }
+    
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; 
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                
+                tempRecord.image = dataUrl;
+                document.getElementById('image-preview').src = dataUrl;
+                document.getElementById('image-preview-container').style.display = 'block';
+            }
+            img.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+        tempRecord.image = null;
+        document.getElementById('image-preview').src = '';
+        document.getElementById('image-preview-container').style.display = 'none';
+        document.getElementById('input-image').value = '';
+    }
+
+    function submitRecord() { 
+        playSE(audioBtn); 
+        if(!document.getElementById('input-text').value.trim()) { alert("少しだけでも言葉を入力してくださいね。"); return; } 
+        
+        let isFirstTime = false;
+        if (!appData.hasMadeFirstRecord) {
+            appData.hasMadeFirstRecord = true;
+            isFirstTime = true;
+        }
+
+        let finalWho = document.getElementById('input-who').value; 
+        if(finalWho === 'その他') { finalWho = document.getElementById('input-who-custom').value.trim() || '匿名の誰か'; if(!appData.customWhoList.includes(finalWho)) { appData.customWhoList.push(finalWho); initWhoSelect(); } } 
+        tempRecord.id = Date.now() + Math.random().toString(36).substr(2, 5); 
+        tempRecord.who = finalWho; tempRecord.intensity = parseInt(document.getElementById('input-intensity').value); 
+        tempRecord.text = document.getElementById('input-text').value; 
+        let dateVal = document.getElementById('input-date').value; 
+        
+        let dateStr = dateVal ? new Date(dateVal).toLocaleString('ja-JP', {year:'numeric', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}) : new Date().toLocaleString('ja-JP', {year:'numeric', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}); 
+        
+        const recordToSave = JSON.parse(JSON.stringify({ ...tempRecord, date: dateStr })); 
+        appData.allRecords.unshift(recordToSave); appData.currentFlowerLogs.push(recordToSave); 
+        appData.currentEnergy += tempRecord.intensity; 
+        if(appData.currentEnergy > maxEnergy) appData.currentEnergy = maxEnergy; 
+        
+        if(tempRecord.emotion === 'happy') appData.waterEnergy += tempRecord.intensity; 
+        else appData.fertEnergy += tempRecord.intensity; 
+        
+        saveData(); 
+        
+       // ✨ ここから追加：記録した直後に感情に応じたメッセージを出す ✨
+        if (tempRecord.emotion === 'happy') {
+            showCustomToast("素敵なキモチを記録しました！");
+        } else {
+            showCustomToast("つらい気持ちをそっと受け止めました");
+        }
+        // ✨ 追加ここまで ✨
+
+        tempRecord.tags = []; 
+        removeImage(); 
+        closeModal('record-modal'); 
+        
+        playInteraction(tempRecord.emotion); 
+        setTimeout(() => checkGrowth(false), 1000); 
+
+        if (isFirstTime) {
+            setTimeout(() => {
+                playSE(audioBtn);
+                document.getElementById('first-record-modal').style.display = 'flex';
+            }, 2500);
+        }
+    }
+    function deleteRecord(recId) { playSE(audioBtn); appData.allRecords = appData.allRecords.filter(r => r.id !== recId); const indexInCurrent = appData.currentFlowerLogs.findIndex(r => r.id === recId); if (indexInCurrent !== -1) { const rec = appData.currentFlowerLogs[indexInCurrent]; appData.currentEnergy -= rec.intensity; if(appData.currentEnergy < 0) appData.currentEnergy = 0; if(rec.emotion === 'happy') appData.waterEnergy = Math.max(0, appData.waterEnergy - rec.intensity); else appData.fertEnergy = Math.max(0, appData.fertEnergy - rec.intensity); appData.currentFlowerLogs.splice(indexInCurrent, 1); checkGrowth(true); } appData.gardenFlowers.forEach(flower => { if(flower.logs) { flower.logs = flower.logs.filter(r => r.id !== recId); } }); saveData(); updateHistoryView(); if (document.getElementById('flower-log-modal').style.display === 'flex' && currentOpenFlowerId) { const flower = appData.gardenFlowers.find(f => f.id === currentOpenFlowerId); if(flower) { openFlowerLogs(flower.logs, flower.id); } } }
+    
+    function updateFilterTagList() {
+        const container = document.getElementById('filter-tag-list');
+        container.innerHTML = '';
+        
+        const showHappy = document.getElementById('filter-emotion-happy').checked;
+        const showPainful = document.getElementById('filter-emotion-painful').checked;
+        
+        let tagsToShow = [];
+        if (showHappy) { tagsToShow = tagsToShow.concat(defaultTagsHappy, appData.customTagsHappy); }
+        if (showPainful) { tagsToShow = tagsToShow.concat(defaultTagsPainful, appData.customTagsPainful); }
+        
+        tagsToShow = [...new Set(tagsToShow)]; 
+        
+        if (tagsToShow.length === 0) {
+            container.innerHTML = '<span style="font-size:0.8rem; color:#999;">表示できるタグがありません。</span>';
+            return;
+        }
+
+        tagsToShow.forEach(tagName => {
+            const btn = document.createElement('button');
+            btn.className = 'tag-btn selected';
+            
+            const isHappy = defaultTagsHappy.includes(tagName) || appData.customTagsHappy.includes(tagName);
+            const isPainful = defaultTagsPainful.includes(tagName) || appData.customTagsPainful.includes(tagName);
+            
+            if (isPainful && !isHappy) {
+                btn.classList.add('painful');
+            }
+
+            btn.innerText = '#' + tagName;
+            btn.onclick = () => {
+                playSE(audioBtn);
+                document.getElementById('filter-keyword').value = '#' + tagName;
+                updateHistoryView();
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    let isTagListManuallyOpened = false;
+
+    function toggleFilterTagList() {
+        playSE(audioBtn);
+        const container = document.getElementById('filter-tag-list');
+        if (container.style.display === 'none' || container.style.display === '') {
+            container.style.display = 'flex';
+            isTagListManuallyOpened = true;
+        } else {
+            container.style.display = 'none';
+            isTagListManuallyOpened = false;
+        }
+    }
+
+    function handleKeywordInput() {
+        const keyword = document.getElementById('filter-keyword').value;
+        const tagListContainer = document.getElementById('filter-tag-list');
+        
+        if (keyword.includes('#')) {
+            tagListContainer.style.display = 'flex';
+        } else if (!isTagListManuallyOpened) {
+            tagListContainer.style.display = 'none';
+        }
+        
+        updateHistoryView();
+    }
+
+    function toggleFilter() { playSE(audioBtn); const panel = document.getElementById('filter-panel'); panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; }
+    
+    function updateHistoryView() { 
+        const list = document.getElementById('history-list'); 
+        list.innerHTML = ''; 
+        if(!appData.allRecords || appData.allRecords.length === 0) { list.innerHTML = '<p style="text-align:center; color:#888;">まだ記録がありません。</p>'; return; } 
+        
+        const keyword = document.getElementById('filter-keyword').value.toLowerCase(); 
+        const who = document.getElementById('filter-who').value; 
+        const category = document.getElementById('filter-category').value; 
+        const minIntensity = parseInt(document.getElementById('filter-intensity').value) || 1; 
+        
+        const showHappy = document.getElementById('filter-emotion-happy').checked;
+        const showPainful = document.getElementById('filter-emotion-painful').checked;
+
+        let filtered = appData.allRecords.filter(rec => { 
+            let match = true; 
+            
+            if (rec.emotion === 'happy' && !showHappy) match = false;
+            if (rec.emotion === 'painful' && !showPainful) match = false;
+
+            if (who && rec.who !== who) match = false; 
+            if (category && !rec.category.includes(category)) match = false; 
+            if (rec.intensity < minIntensity) match = false; 
+            if (keyword) { 
+                const textMatch = rec.text.toLowerCase().includes(keyword); 
+                const cleanKeyword = keyword.replace('#', ''); 
+                const tagMatch = rec.tags && rec.tags.some(t => t.toLowerCase().includes(cleanKeyword)); 
+                if (!textMatch && !tagMatch) match = false; 
+            } 
+            return match; 
+        }); 
+        
+        if (filtered.length === 0) { list.innerHTML = '<p style="text-align:center; color:#888;">条件に合うきろくが見つかりませんでした。</p>'; return; } 
+        filtered.forEach(rec => list.appendChild(renderRecordItem(rec))); 
+    }
+    
+    function exportText() { playSE(audioBtn); let text = "【メブキテラス きろく書き出し】\n\n"; appData.allRecords.forEach(rec => { text += `■ ${rec.date} | ${rec.emotion === 'happy' ? '💧' : '✨'} ${rec.category} | ${rec.who} (強さ:${rec.intensity})\n`; if(rec.tags && rec.tags.length > 0) text += `タグ: ${rec.tags.map(t=>'#'+t).join(', ')}\n`; if(rec.image) text += `[思い出の画像あり]\n`; text += `${rec.text}\n\n`; }); const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(text); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "kokorofarm_records.txt"); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); }
+    
+    function exportBackup() { playSE(audioBtn); const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "kokorofarm_backup.json"); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); }
+    function triggerImport() { playSE(audioBtn); document.getElementById('import-file').click(); }
+    function importBackup(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); if(importedData.allRecords !== undefined && importedData.gardenFlowers !== undefined) { appData = importedData; saveData(); restoreGarden(); updateHistoryView(); checkGrowth(true); alert("データの復元が完了しました！"); closeModal('backup-modal'); } else { alert("正しいバックアップファイルではありません。"); } } catch(err) { alert("ファイルの読み込みに失敗しました。"); } event.target.value = ''; }; reader.readAsText(file); }
+    
+    function deleteAllData() { 
+        playSE(audioBtn); 
+        if(confirm("今まで書いたすべてのきろくが消えてしまいます。本当によろしいでしょうか？万が一復元したいときのため、書き出しの上ファイルを大切に取っておくことをおすすめします。")) { 
+            if(confirm("【最終確認】\nすべてのデータを本当に削除しますか？\n※この操作は取り消せません。")) {
+                appData = { allRecords: [], currentFlowerLogs: [], currentEnergy: 0, waterEnergy: 0, fertEnergy: 0, gardenFlowers: [], customWhoList: [], customTagsHappy: [], customTagsPainful: [], hasSeenResiliencePopup: false, hasMadeFirstRecord: false, hasPlantedFirstFlower: false, bgmVolume: bgmVolume, seVolume: seVolume, homeBgIndex: 1, gardenBgIndex: 1, dailyGoal: null, dailyGoalDate: '', dailyGoalAchieved: false, dailyScores: {}, hasMadeFirstScore: false }; 
+                localStorage.removeItem('kokoroFarmData'); 
+                localStorage.removeItem(walkthroughStorageKey); 
+                alert("すべてのデータを削除しました。\n画面を再読み込み（リロード）すると、最初の案内から始まります。"); 
+                location.reload(); 
+            }
+        } 
+    }
+
+    function playInteraction(emotion) { const area = document.getElementById('avatar-area'); if (emotion === 'happy') { avatarImg.src = 'water.webp'; playSE(audioWater); for(let i=0; i<8; i++) { setTimeout(() => { let drop = document.createElement('div'); drop.innerText = '💧'; drop.className = 'raindrop'; drop.style.left = (Math.random() * 160 + 40) + 'px'; area.appendChild(drop); setTimeout(() => drop.remove(), 800); }, i * 100); } } else { avatarImg.src = 'soil.webp'; playSE(audioSoil); for(let i=0; i<3; i++) { setTimeout(() => { let sparkle = document.createElement('div'); sparkle.innerText = '✨'; sparkle.className = 'sparkle'; sparkle.style.left = (Math.random() * 140 + 50) + 'px'; sparkle.style.top = '150px'; area.appendChild(sparkle); setTimeout(() => sparkle.remove(), 1200); }, i * 200); } } setTimeout(() => { if(appData.currentEnergy >= maxEnergy) { avatarImg.src = 'bloom.webp'; } else { avatarImg.src = 'normal.webp'; } }, 2000); }
+    function checkGrowth(isRestoring) { seedlingImg.style.display = 'none'; ivyImg.style.display = 'none'; flowerImg.style.display = 'none'; if (appData.currentEnergy >= maxEnergy) { if(!isRestoring) { avatarImg.src = 'bloom.webp'; flowerImg.style.display = 'block'; flowerImg.style.transform = 'translateX(-50%) scale(1.2)'; setTimeout(() => { flowerImg.style.transform = 'translateX(-50%) scale(1)'; }, 300); } else { avatarImg.src = 'bloom.webp'; flowerImg.style.display = 'block'; } } else { if(appData.currentEnergy >= 20) { ivyImg.style.display = 'block'; } else if(appData.currentEnergy > 0) { seedlingImg.style.display = 'block'; } if(isRestoring || avatarImg.src.includes('normal.webp')) { avatarImg.src = 'normal.webp'; } } if (appData.currentEnergy >= (maxEnergy - 10) && appData.currentEnergy < maxEnergy) { bubbleEl.style.display = 'block'; } else { bubbleEl.style.display = 'none'; } if (appData.currentEnergy >= maxEnergy) { harvestBtn.style.display = 'block'; document.querySelector('.main-record-btn').style.display = 'none'; progressTextEl.innerText = "満開です！お花を摘み取れます🌸"; barEl.style.width = '100%'; if(appData.waterEnergy === 0 && !appData.hasSeenResiliencePopup && !isRestoring) { appData.hasSeenResiliencePopup = true; setTimeout(() => { document.getElementById('resilience-modal').style.display = 'flex'; }, 500); } } else { harvestBtn.style.display = 'none'; document.querySelector('.main-record-btn').style.display = 'block'; const percent = (appData.currentEnergy / maxEnergy) * 100; barEl.style.width = percent + '%'; progressTextEl.innerText = `開花まであと: ${maxEnergy - appData.currentEnergy} エナジー`; } if(!isRestoring) saveData(); }
+    
+    function harvestFlower() { 
+        playSE(audioTwinkle); 
+        
+        if (appData.gardenFlowers.length >= 100) {
+            alert("5つのガーデンがすべて満開になりました！これ以上はお花を植えられません🌸\nたくさん記録してくれてありがとうございます！");
+            return;
+        }
+
+        let r = Math.floor(Math.random() * 3) + 1;
+        let selectedImage = '';
+        
+        if (appData.waterEnergy >= 40) {
+            selectedImage = `flower40-${r}.webp`;
+        } else if (appData.waterEnergy >= 30) {
+            selectedImage = `flower39-${r}.webp`;
+        } else if (appData.waterEnergy >= 20) {
+            selectedImage = `flower29-${r}.webp`;
+        } else if (appData.waterEnergy >= 10) {
+            selectedImage = `flower19-${r}.webp`;
+        } else if (appData.waterEnergy >= 1) {
+            selectedImage = `flower9-${r}.webp`;
+        } else {
+            selectedImage = `flower0-${r}.webp`;
+        }
+        
+        const flowerCount = appData.gardenFlowers.length;
+        const targetGardenIndex = Math.floor(flowerCount / 20) + 1;
+
+        const newFlowerData = { 
+            id: Date.now(), 
+            emoji: '', 
+            image: selectedImage, 
+            left: (Math.random() * 200 + 50) + 'px', 
+            top: (Math.random() * 300 + 50) + 'px', 
+            logs: JSON.parse(JSON.stringify(appData.currentFlowerLogs)),
+            gardenIndex: targetGardenIndex 
+        }; 
+        
+        appData.gardenFlowers.push(newFlowerData); 
+        
+        let isFirstFlower = false;
+        if (flowerCount === 0 && !appData.hasPlantedFirstFlower) {
+            appData.hasPlantedFirstFlower = true;
+            isFirstFlower = true;
+        }
+
+        appData.currentEnergy = 0; appData.waterEnergy = 0; appData.fertEnergy = 0; appData.currentFlowerLogs = []; 
+        saveData(); 
+        
+        currentDisplayGarden = targetGardenIndex;
+        const numChar = ['①', '②', '③', '④', '⑤'][currentDisplayGarden - 1];
+        if(document.getElementById('garden-switch-btn')) {
+            document.getElementById('garden-switch-btn').innerHTML = `${numChar}<br><span>ガーデン</span>`;
+        }
+
+        const garden = document.getElementById('view-garden'); 
+        Array.from(garden.children).forEach(child => { 
+            if(child.tagName !== 'P' && child.tagName !== 'BUTTON' && child.tagName !== 'DIV' || child.classList.contains('garden-flower')) {
+                 if (child.classList.contains('garden-flower')) {
+                     child.remove();
+                 }
+            }
+        }); 
+        appData.gardenFlowers.forEach(flowerData => {
+            const gIndex = flowerData.gardenIndex || 1;
+            if (gIndex === currentDisplayGarden) {
+                const isNewFlower = (flowerData.id === newFlowerData.id);
+                renderSingleFlower(flowerData, isNewFlower); 
+            }
+        });
+
+        avatarImg.src = 'normal.webp'; 
+        checkGrowth(false); 
+        switchTab('garden'); 
+
+        if (isFirstFlower) {
+            setTimeout(() => {
+                playSE(audioBtn);
+                document.getElementById('first-flower-modal').style.display = 'flex';
+            }, 500);
+        } else if (flowerCount > 0 && flowerCount % 20 === 0) {
+            setTimeout(() => {
+                playSE(audioBtn);
+                showGardenChangeToast(targetGardenIndex);
+            }, 500);
+        } else if (flowerCount > 0 && (flowerCount + 1) % 5 === 0) {
+            setTimeout(() => {
+                playSE(audioBtn); 
+                showToastNotification(flowerCount + 1);
+            }, 500);
+        }
+    }
+
+    function showToastNotification(count) {
+        const msgs = [
+            "素敵なガーデンになってきましたね！",
+            "色とりどりのキモチが咲いていますね！",
+            "あなただけの特別な場所が育っていますね🌸",
+            "どんなお花畑になるか楽しみですね✨",
+            "これからもゆっくり育てていきましょう🌱"
+        ];
+        const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+        const text = `${count}本目のおはなが咲きました！\n${randomMsg}`;
+        showCustomToast(text);
+    }
+
+    function restoreGarden() { 
+        const garden = document.getElementById('view-garden'); 
+        Array.from(garden.children).forEach(child => { 
+            if(child.tagName !== 'P' && child.tagName !== 'BUTTON' && child.tagName !== 'DIV' || child.classList.contains('garden-flower')) {
+                 if (child.classList.contains('garden-flower')) {
+                     child.remove();
+                 }
+            }
+        }); 
+        if(appData.gardenFlowers) { 
+            appData.gardenFlowers.forEach(flowerData => {
+                const gIndex = flowerData.gardenIndex || 1;
+                if (gIndex === currentDisplayGarden) {
+                    renderSingleFlower(flowerData, false); 
+                }
+            }); 
+        } 
+    }
+    
+    function renderSingleFlower(flowerData, isNew = false) { 
+        const garden = document.getElementById('view-garden'); 
+        const flower = document.createElement('div'); 
+        flower.className = 'garden-flower'; 
+        
+        if (flowerData.image) {
+            const img = document.createElement('img');
+            img.src = flowerData.image;
+            img.setAttribute('draggable', 'false');
+            flower.appendChild(img);
+        } else {
+            flower.innerText = flowerData.emoji; 
+        }
+        
+        flower.style.left = flowerData.left; 
+        flower.style.top = flowerData.top; 
+        flower.dataset.id = flowerData.id; 
+        
+        if (isNew) { 
+            const badge = document.createElement('div'); badge.className = 'new-badge'; badge.innerText = 'NEW'; 
+            flower.appendChild(badge); 
+            const removeBadge = () => { if(badge.parentNode) badge.parentNode.removeChild(badge); }; 
+            flower.addEventListener('mousedown', removeBadge, {once: true}); 
+            flower.addEventListener('touchstart', removeBadge, {once: true}); 
+        } 
+        makeDraggableAndClickable(flower, flowerData); 
+        garden.appendChild(flower); 
+    }
+    
+    function makeDraggableAndClickable(elmnt, flowerData) { 
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; 
+        let isDragged = false; 
+        let longPressTimer = null;
+        let isLongPressTriggered = false;
+
+        elmnt.onmousedown = dragStart; 
+        elmnt.ontouchstart = dragStart; 
+        
+        function dragStart(e) { 
+            e.preventDefault(); 
+            isDragged = false; 
+            isLongPressTriggered = false;
+
+            if(e.type === 'touchstart') { pos3 = e.touches[0].clientX; pos4 = e.touches[0].clientY; } 
+            else { pos3 = e.clientX; pos4 = e.clientY; } 
+            
+            document.onmouseup = dragEnd; 
+            document.onmousemove = dragging; 
+            document.ontouchend = dragEnd; 
+            document.ontouchmove = dragging; 
+
+            elmnt.classList.add('flower-picking');
+            elmnt.classList.remove('flower-dropped');
+            playSE(audioFlowerPick);
+
+            longPressTimer = setTimeout(() => {
+                isLongPressTriggered = true;
+                promptDeleteFlower(flowerData.id, elmnt);
+            }, 4000);
+        } 
+        
+        function dragging(e) { 
+            e.preventDefault(); 
+            let clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX; 
+            let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY; 
+            
+            if (Math.abs(clientX - pos3) > 5 || Math.abs(clientY - pos4) > 5) {
+                isDragged = true; 
+                clearTimeout(longPressTimer);
+            }
+
+            if (!isLongPressTriggered) {
+                pos1 = pos3 - clientX; pos2 = pos4 - clientY; pos3 = clientX; pos4 = clientY; 
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; 
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; 
+            }
+        } 
+        
+        function dragEnd() { 
+            document.onmouseup = null; document.onmousemove = null; 
+            document.ontouchend = null; document.ontouchmove = null; 
+            clearTimeout(longPressTimer); 
+
+            elmnt.classList.remove('flower-picking');
+            elmnt.classList.add('flower-dropped');
+
+            if (!isLongPressTriggered) {
+                if (!isDragged) { 
+                    playSE(audioBtn); 
+                    openFlowerLogs(flowerData.logs, flowerData.id); 
+                } else { 
+                    playSE(audioFlowerDrag);
+                    for(let i=0; i<3; i++) { 
+                        setTimeout(() => { 
+                            let sparkle = document.createElement('div'); 
+                            sparkle.innerText = '✨'; 
+                            sparkle.className = 'sparkle'; 
+                            sparkle.style.left = (elmnt.offsetLeft + Math.random() * 40 - 10) + 'px'; 
+                            sparkle.style.top = (elmnt.offsetTop + Math.random() * 40 - 20) + 'px'; 
+                            elmnt.parentNode.appendChild(sparkle); 
+                            setTimeout(() => sparkle.remove(), 1200); 
+                        }, i * 150); 
+                    }
+
+                    const fId = parseInt(elmnt.dataset.id); 
+                    const flowerIndex = appData.gardenFlowers.findIndex(f => f.id === fId); 
+                    if(flowerIndex > -1) { 
+                        appData.gardenFlowers[flowerIndex].left = elmnt.style.left; 
+                        appData.gardenFlowers[flowerIndex].top = elmnt.style.top; 
+                        saveData(); 
+                    } 
+                } 
+            }
+        } 
+    }
+
+    function promptDeleteFlower(flowerId, elmnt) {
+        playSE(audioBtn);
+        if(confirm("お花を摘んでガーデンから取り除きますか？\n※この操作は元に戻せません。")) {
+            
+            playSE(audioFlowerDelete);
+            if (elmnt) {
+                elmnt.classList.add('flower-deleting');
+            }
+
+            const flower = appData.gardenFlowers.find(f => f.id === flowerId);
+            if(flower && flower.logs) {
+                const logIdsToDelete = flower.logs.map(log => log.id);
+                appData.allRecords = appData.allRecords.filter(rec => !logIdsToDelete.includes(rec.id));
+                appData.currentFlowerLogs = appData.currentFlowerLogs.filter(log => !logIdsToDelete.includes(log.id));
+            }
+            appData.gardenFlowers = appData.gardenFlowers.filter(f => f.id !== flowerId);
+            saveData();
+            
+            setTimeout(() => {
+                restoreGarden();
+                updateHistoryView();
+            }, 400); 
+
+        } else {
+            if (elmnt) {
+                elmnt.classList.remove('flower-picking');
+                elmnt.classList.add('flower-dropped');
+            }
+        }
+    }
+
+    function renderRecordItem(rec) { 
+        const item = document.createElement('div'); 
+        item.className = `history-item ${rec.emotion === 'painful' ? 'painful' : ''}`; 
+        const deleteBtn = document.createElement('button'); 
+        deleteBtn.className = 'delete-record-btn'; 
+        deleteBtn.innerHTML = '×'; 
+        deleteBtn.onclick = (e) => { e.stopPropagation(); if(confirm("このきろくを消しますか？")) { deleteRecord(rec.id); } }; 
+        
+        let tagsHtml = ''; 
+        if(rec.tags && rec.tags.length > 0) { 
+            tagsHtml = '<div style="margin-top:5px;">' + rec.tags.map(t => {
+                if (t === '今日のココロの目標') {
+                    return `<span class="display-tag" style="background: #ffb6c1; color: white; border: 1px solid #ffb6c1; font-weight: bold;">#${t}</span>`;
+                } else {
+                    return `<span class="display-tag">#${t}</span>`;
+                }
+            }).join('') + '</div>'; 
+        } 
+        
+        let imageHtml = '';
+        if(rec.image) { imageHtml = `<img src="${rec.image}" class="history-image" alt="思い出の画像">`; }
+
+        if (rec.isGoal) {
+            item.innerHTML = `<div class="history-meta" style="color: var(--primary-color); font-weight: bold;">${rec.date}の目標 | ${rec.time}に達成！</div><div class="history-text" style="font-size: 1.1rem; font-weight: bold; margin-top: 5px;">【${rec.text}】</div>${imageHtml}${tagsHtml}`; 
+        } else {
+            const icon = rec.emotion === 'happy' ? '💧' : '✨'; 
+            item.innerHTML = `<div class="history-meta">${rec.date} | ${icon} ${rec.category} | ${rec.who}</div><div class="history-text">${rec.text.replace(/\n/g, '<br>')}</div>${imageHtml}${tagsHtml}`; 
+        }
+        
+        item.appendChild(deleteBtn); 
+        return item; 
+    }
+
+    function openFlowerLogs(logs, flowerId) { currentOpenFlowerId = flowerId; const listDiv = document.getElementById('flower-log-list'); listDiv.innerHTML = ''; if(!logs || logs.length === 0) { listDiv.innerHTML = '<p style="text-align:center;">このお花には特別な記録がありません。</p>'; } else { [...logs].reverse().forEach(rec => listDiv.appendChild(renderRecordItem(rec))); } document.getElementById('flower-log-modal').style.display = 'flex'; }
+
+    // ==========================================
+    // シェア画像生成機能 (Native Canvas方式)
+    // ==========================================
+    async function openShareModal() {
+        playSE(audioBtn);
+        
+        document.getElementById('share-loading').style.display = 'flex';
+
+        try {
+            const compCanvas = document.getElementById('share-composition-canvas');
+            const ctx = compCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff'; 
+            ctx.fillRect(0, 0, 800, 1280);
+
+            const tX = 20, tY = 100, tW = 760, tH = 1000;
+
+            const bgImg = new Image();
+            bgImg.crossOrigin = "anonymous";
+            bgImg.src = `bg_garden_${gardenBgIndex}.webp`;
+            await new Promise((resolve) => {
+                bgImg.onload = resolve;
+                bgImg.onerror = resolve; 
+            });
+
+            if (bgImg.complete && bgImg.naturalWidth > 0) {
+                const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
+                const targetRatio = tW / tH;
+                let drawW, drawH, drawX, drawY;
+                if (imgRatio > targetRatio) {
+                    drawH = tH;
+                    drawW = bgImg.naturalWidth * (tH / bgImg.naturalHeight);
+                    drawX = tX + (tW - drawW) / 2;
+                    drawY = tY;
+                } else {
+                    drawW = tW;
+                    drawH = bgImg.naturalHeight * (tW / bgImg.naturalWidth);
+                    drawX = tX;
+                    drawY = tY + (tH - drawH) / 2;
+                }
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(tX, tY, tW, tH); 
+                ctx.clip();
+                ctx.drawImage(bgImg, drawX, drawY, drawW, drawH);
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#e8f4e8';
+                ctx.fillRect(tX, tY, tW, tH);
+            }
+
+            const gardenEl = document.getElementById('view-garden');
+            const gW = gardenEl.clientWidth || 375;
+            const gH = gardenEl.clientHeight || 600;
+
+            const scale = Math.min(tW / gW, tH / gH);
+            const drawW_g = gW * scale;
+            const drawH_g = gH * scale;
+
+            const offsetX = tX + (tW - drawW_g) / 2;
+            const offsetY = tY + (tH - drawH_g) / 2;
+
+            const currentFlowers = appData.gardenFlowers.filter(f => {
+                const gIndex = f.gardenIndex || 1;
+                return gIndex === currentDisplayGarden;
+            });
+
+            const promises = currentFlowers.map(f => {
+                return new Promise((resolve) => {
+                    if (f.image) {
+                        const img = new Image();
+                        img.onload = () => resolve({ f: f, img: img });
+                        img.onerror = () => resolve({ f: f, img: null });
+                        img.src = f.image;
+                    } else {
+                        resolve({ f: f, img: null });
+                    }
+                });
+            });
+
+            const loadedFlowers = await Promise.all(promises);
+
+            loadedFlowers.forEach(item => {
+                const f = item.f;
+                const img = item.img;
+
+                const left = parseFloat(f.left);
+                const top = parseFloat(f.top);
+                
+                const cx = offsetX + (left * scale);
+                const cy = offsetY + (top * scale);
+
+                ctx.shadowColor = "rgba(0,0,0,0.15)";
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 4 * scale;
+                ctx.shadowBlur = 4 * scale;
+
+                if (img) {
+                    const imgH = 64 * scale; 
+                    const imgW = img.naturalWidth * (imgH / img.naturalHeight);
+                    ctx.drawImage(img, cx, cy, imgW, imgH);
+                } else if (f.emoji) {
+                    const fontSize = 64 * scale;
+                    ctx.font = `${fontSize}px sans-serif`;
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "top";
+                    ctx.fillText(f.emoji, cx, cy);
+                }
+            });
+
+            ctx.shadowColor = "transparent";
+
+            const frameImg = new Image();
+            frameImg.crossOrigin = "anonymous";
+            
+            // ✨✨ここにBase64文字列を貼り付けてください (data:image/webp;base64,... で始まる文字列)✨✨
+            const frameBase64 = ''; 
+
+            if (!frameBase64 || !frameBase64.startsWith('data:image')) {
+                throw new Error('コード内の frameBase64 に、シェア用のフレーム画像のBase64文字列が貼り付けられていません。');
+            }
+
+            frameImg.src = frameBase64;
+            
+            await new Promise((resolve, reject) => {
+                frameImg.onload = resolve;
+                frameImg.onerror = () => reject(new Error('フレーム画像の読み込みに失敗しました。貼り付けたデータが正しいか確認してください。'));
+            });
+
+            ctx.drawImage(frameImg, 0, 0, 800, 1280);
+
+            document.getElementById('share-preview').src = compCanvas.toDataURL('image/webp');
+            document.getElementById('share-modal').style.display = 'flex';
+
+        } catch (e) {
+            console.error("シェア画像の生成に失敗しました:", e);
+            alert("画像の生成に失敗しました！\n\n【原因】\nパソコンのフォルダからファイルを直接開いている場合、ブラウザのセキュリティ制限によって複数の画像（背景やお花など）を合成できません。\nNetlify等のサーバーにアップロードして公開すれば正常にシェアできるようになります🌸");
+        } finally {
+            document.getElementById('share-loading').style.display = 'none';
+        }
+    }
+
+    async function shareViaWebAPI() {
+        playSE(audioBtn);
+        const imgData = document.getElementById('share-preview').src;
+        const text = document.getElementById('share-text-area').value;
+        
+        try {
+            const res = await fetch(imgData);
+            const blob = await res.blob();
+            const file = new File([blob], 'kokoro-garden.webp', { type: 'image/webp' });
+            
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ text: text, files: [file] });
+            } else {
+                copyAndDownloadFallback();
+            }
+        } catch (err) {
+            console.log("シェアがキャンセルされたかエラー:", err);
+        }
+    }
+
+    function copyAndDownloadFallback() {
+        playSE(audioBtn);
+        const textArea = document.getElementById('share-text-area');
+        textArea.select();
+        document.execCommand('copy');
+        
+        const imgData = document.getElementById('share-preview').src;
+        const a = document.createElement('a');
+        a.href = imgData;
+        a.download = 'kokoro_garden.webp';
+        a.click();
+        
+        alert("テキストをコピーし、画像をダウンロードしました！\nお好きなSNS（XやInstagramなど）を開いて、画像を添付して投稿してください🌸");
+    }
+
+    // ==========================================
+    // チュートリアル用JavaScript
+    // ==========================================
+    
+    function showWalkthroughStep(stepIndex) {
+        currentWalkthroughStep = stepIndex;
+        document.querySelectorAll('.walkthrough-step').forEach(el => {
+            el.classList.toggle('active', parseInt(el.dataset.step) === stepIndex);
+        });
+        document.querySelectorAll('.walkthrough-dots .dot').forEach((dot, index) => {
+            dot.classList.toggle('active', index === stepIndex);
+        });
+
+        const nextBtn = document.getElementById('walk-next-btn');
+        const nextText = document.getElementById('walk-next-text');
+        const prevBtn = document.getElementById('walk-prev-btn');
+
+        if (stepIndex === 0) {
+            if(nextBtn) nextBtn.style.display = 'block';
+            if(nextText) nextText.innerText = '次へ';
+            if(prevBtn) prevBtn.style.display = 'none';
+        } else {
+            if(nextBtn) nextBtn.style.display = 'block';
+            if(nextText) nextText.innerText = (stepIndex === totalWalkthroughSteps - 1) ? '閉じる' : '次へ';
+            if(prevBtn) prevBtn.style.display = 'block';
+        }
+    }
+
+    function nextWalkthroughStep() {
+        playSE(audioBtn);
+        if (currentWalkthroughStep < totalWalkthroughSteps - 1) {
+            showWalkthroughStep(currentWalkthroughStep + 1);
+        } else {
+            finishWalkthrough();
+        }
+    }
+
+    function prevWalkthroughStep() {
+        playSE(audioBtn);
+        if (currentWalkthroughStep > 0) {
+            showWalkthroughStep(currentWalkthroughStep - 1);
+        }
+    }
+
+    function finishWalkthrough() {
+        playSE(audioBtn);
+        document.getElementById('walkthrough-container').style.display = 'none';
+        if (!isTutorialReplay) {
+            localStorage.setItem(walkthroughStorageKey, 'true');
+        }
+        isTutorialReplay = false;
+    }
+
+    function startTutorialReplay() {
+        playSE(audioBtn);
+        isTutorialReplay = true;
+        currentWalkthroughStep = 1; 
+        document.getElementById('walkthrough-container').style.display = 'flex';
+        showWalkthroughStep(currentWalkthroughStep);
+    }
+
+    let walkTouchStartX = 0;
+    const walkContainer = document.getElementById('walkthrough-container');
+    if (walkContainer) {
+        walkContainer.addEventListener('touchstart', e => { walkTouchStartX = e.changedTouches[0].screenX; }, {passive: true});
+        walkContainer.addEventListener('touchend', e => {
+            let touchEndX = e.changedTouches[0].screenX;
+            const diff = walkTouchStartX - touchEndX;
+            if (diff > 50) {
+                nextWalkthroughStep();
+            } else if (diff < -50) {
+                prevWalkthroughStep();
+            }
+        }, {passive: true});
+    }
+
+    // ==========================================
+    // ココロスコア関連
+    // ==========================================
+    function openScoreModal() {
+        playSE(audioBtn);
+        document.getElementById('score-modal').style.display = 'flex';
+        
+        const slider = document.getElementById('input-daily-score');
+        const now = new Date();
+        const dateKey = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate();
+        
+        if (appData.dailyScores && appData.dailyScores[dateKey] !== undefined) {
+            slider.value = appData.dailyScores[dateKey];
+        } else {
+            slider.value = 5; 
+        }
+        updateSliderColor(slider);
+    }
+
+    function updateSliderColor(slider) {
+        const val = parseInt(slider.value);
+        const percentage = ((val - 1) / 9) * 100; 
+        slider.style.background = `linear-gradient(to right, transparent ${percentage}%, #eeeeee ${percentage}%, #eeeeee 100%), linear-gradient(to right, #89c4ff 0%, #ffb6c1 100%)`;
+
+        // ✨ 追加：数字に合わせて目安テキストと色を変更する
+        const guideText = document.getElementById('score-guide-text');
+        if (guideText) {
+            if (val <= 3) {
+                guideText.innerText = "今日はゆっくり休もうね🍵";
+                guideText.style.color = "#89c4ff"; // 休みたい時の優しい水色
+            } else if (val <= 7) {
+                guideText.innerText = "ぼちぼち、自分のペースで🌱";
+                guideText.style.color = "var(--primary-color)"; // いつもの緑色
+            } else {
+                guideText.innerText = "いい感じ！その調子✨";
+                guideText.style.color = "#ffb6c1"; // 元気なピンク色
+            }
+        }
+    }
+
+    function submitDailyScore() {
+        playSE(audioBtn);
+        const score = parseInt(document.getElementById('input-daily-score').value);
+        const now = new Date();
+        const dateKey = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate();
+        
+        if(!appData.dailyScores) appData.dailyScores = {};
+        appData.dailyScores[dateKey] = score;
+        
+        let isFirstTimeScore = false;
+        if (!appData.hasMadeFirstScore) {
+            appData.hasMadeFirstScore = true;
+            isFirstTimeScore = true;
+        }
+
+        saveData();
+        
+        closeModal('score-modal');
+        updateDailyScoreButton();
+       
+        if (isFirstTimeScore) {
+            showCustomToast(`初めてのスコアきろく、できましたね✨\n右上のメニューからグラフで振り返れますよ🌱`);
+        } else {
+            showCustomToast(`今日のココロスコアを「${score}」で記録しました💓`);
+        }
+        
+        if (typeof drawChart === 'function') drawChart();
+    }
+
+    let currentChartDays = 7;
+    let currentChartOffset = 0;
+    let chartTouchStartX = 0;
+    let chartTouchEndX = 0;
+
+    function updateChartMode(days) {
+        playSE(audioBtn);
+        currentChartDays = days;
+        currentChartOffset = 0; 
+        
+        document.getElementById('chart-week-btn').classList.toggle('active', days === 7);
+        document.getElementById('chart-month-btn').classList.toggle('active', days === 30);
+        
+        const prevBtn = document.getElementById('chart-prev-btn');
+        const nextBtn = document.getElementById('chart-next-btn');
+        if(prevBtn) prevBtn.innerText = days === 7 ? '◀ 前の週' : '◀ 前の月';
+        if(nextBtn) nextBtn.innerText = days === 7 ? '次の週 ▶' : '次の月 ▶';
+        
+        drawChart();
+    }
+
+    function changeChartPage(direction) {
+        if(direction !== 0) playSE(audioBtn);
+        const maxOffset = currentChartDays === 7 ? 52 : 12; 
+        
+        currentChartOffset += direction;
+        if (currentChartOffset < 0) currentChartOffset = 0;
+        if (currentChartOffset > maxOffset) currentChartOffset = maxOffset;
+        
+        drawChart();
+    }
+
+    function resetChartPage() {
+        playSE(audioBtn);
+        currentChartOffset = 0;
+        drawChart();
+    }
+
+    setTimeout(() => {
+        const swipeArea = document.getElementById('chart-swipe-area');
+        if(swipeArea) {
+            swipeArea.addEventListener('touchstart', e => {
+                chartTouchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+            swipeArea.addEventListener('touchend', e => {
+                chartTouchEndX = e.changedTouches[0].screenX;
+                const diff = chartTouchStartX - chartTouchEndX;
+                if (diff > 50) { 
+                    if(currentChartOffset > 0) changeChartPage(-1);
+                } else if (diff < -50) { 
+                    const maxOffset = currentChartDays === 7 ? 52 : 12;
+                    if(currentChartOffset < maxOffset) changeChartPage(1);
+                }
+            }, {passive: true});
+        }
+    }, 1000);
+
+    function drawChart() {
+        const days = currentChartDays;
+        const offset = currentChartOffset;
+        
+        const maxOffset = days === 7 ? 52 : 12;
+        const prevBtn = document.getElementById('chart-prev-btn');
+        const nextBtn = document.getElementById('chart-next-btn');
+        const resetBtn = document.getElementById('chart-reset-btn'); 
+        
+        if(prevBtn && nextBtn && resetBtn) {
+            if(offset >= maxOffset) {
+                prevBtn.style.opacity = "0.5"; prevBtn.style.pointerEvents = "none";
+            } else {
+                prevBtn.style.opacity = "1"; prevBtn.style.pointerEvents = "auto";
+            }
+            if(offset <= 0) {
+                nextBtn.style.opacity = "0.5"; nextBtn.style.pointerEvents = "none";
+                resetBtn.style.opacity = "0.5"; resetBtn.style.pointerEvents = "none";
+            } else {
+                nextBtn.style.opacity = "1"; nextBtn.style.pointerEvents = "auto";
+                resetBtn.style.opacity = "1"; resetBtn.style.pointerEvents = "auto";
+            }
+        }
+
+        const canvas = document.getElementById('score-chart');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        ctx.clearRect(0, 0, w, h);
+
+        const padTop = 30;    
+        const padBottom = 45; 
+        const padLeft = 35;   
+        const padRight = 15;  
+        const usableH = h - padTop - padBottom;
+        const usableW = w - padLeft - padRight;
+        const stepX = usableW / Math.max((days - 1), 1);
+
+        ctx.strokeStyle = '#eee';
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#999';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        
+        for(let i=0; i<=10; i+=2) {
+            const y = h - padBottom - (i/10) * usableH;
+            ctx.beginPath();
+            ctx.moveTo(padLeft, y);
+            ctx.lineTo(w - padRight, y);
+            ctx.stroke();
+            ctx.fillText(i, padLeft - 5, y);
+        }
+
+        if (!appData.dailyScores) appData.dailyScores = {};
+
+        const now = new Date();
+        const baseDate = new Date(now);
+        baseDate.setDate(now.getDate() - offset * days);
+
+        let points = [];
+        const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+        
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.font = 'bold 9px Arial';
+
+        for (let i = days - 1; i >= 0; i--) {
+            let d = new Date(baseDate);
+            d.setDate(baseDate.getDate() - i);
+            const dateKey = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
+            
+            if (days === 7) {
+                const x = padLeft + (days - 1 - i) * stepX;
+                const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+                const dayStr = `(${dayNames[d.getDay()]})`;
+                
+                if (d.getDay() === 0) ctx.fillStyle = '#ffb6c1'; 
+                else if (d.getDay() === 6) ctx.fillStyle = '#89c4ff'; 
+                else ctx.fillStyle = '#777'; 
+                
+                ctx.fillText(dateStr, x, h - 25);
+                ctx.fillText(dayStr, x, h - 13); 
+            }
+
+            if (appData.dailyScores[dateKey] !== undefined) {
+                points.push({
+                    index: days - 1 - i,
+                    score: appData.dailyScores[dateKey]
+                });
+            }
+        }
+
+        if (points.length === 0) {
+            ctx.fillStyle = '#aaa';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('この期間のデータはありません', w/2, h/2);
+            return;
+        }
+
+        ctx.strokeStyle = '#f5deb3'; 
+        ctx.lineWidth = 3;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        points.forEach((p, idx) => {
+            const x = padLeft + p.index * stepX;
+            const y = h - padBottom - (p.score/10) * usableH;
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        ctx.fillStyle = '#8fbc8f'; 
+        ctx.strokeStyle = '#8fbc8f'; 
+        points.forEach((p) => {
+            const x = padLeft + p.index * stepX;
+            const y = h - padBottom - (p.score/10) * usableH;
+            
+            const size = 10; 
+            ctx.beginPath();
+            ctx.moveTo(x, y + size/2); 
+            ctx.bezierCurveTo(x - size, y - size/2, x - size/2, y - size, x, y - size/4);
+            ctx.bezierCurveTo(x + size/2, y - size, x + size, y - size/2, x, y + size/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        });
+    }
+
+    function updateDailyScoreButton() {
+        const btn = document.getElementById('daily-score-btn');
+        if (!btn) return;
+        const now = new Date();
+        const dateKey = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate();
+        
+        if (appData.dailyScores && appData.dailyScores[dateKey] !== undefined) {
+            const score = appData.dailyScores[dateKey];
+            btn.innerHTML = `💓 ココロスコア<br><span style="font-size:1.1rem; display:block; margin-top:2px;">${score}</span>`;
+            btn.style.backgroundColor = "#ffb6c1"; 
+            btn.style.color = "white";
+        } else {
+            btn.innerHTML = "💓 今日の<br>ココロスコア";
+            btn.style.backgroundColor = "#fffafb";
+            btn.style.color = "#ffb6c1";
+        }
+    }
+
+</script>
+</body>
+</html>
