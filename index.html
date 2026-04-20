@@ -34,6 +34,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="メブキテラス">
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6605267054532191" crossorigin="anonymous"></script>
 
     <script>
@@ -410,12 +413,25 @@
 
     <div class="overlay" id="menu-overlay" onclick="toggleMenu()"></div>
     <div class="side-menu" id="side-menu">
-        <div class="menu-header">
-            <h3 style="margin:0; color:var(--text-color);">メニュー</h3>
-            <button class="icon-btn" onclick="toggleMenu()">✕</button>
-        </div>
-        <div class="menu-content">
-            <a href="#" onclick="toggleMenu(); switchTab('log'); return false;">✏️ きろく一覧</a>
+<div class="menu-header">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <h3 style="margin:0; color:var(--text-color);">メニュー</h3>
+        <span id="menu-sync-status" style="font-size: 0.7rem; color: #8fbc8f; background: rgba(143, 188, 143, 0.1); padding: 2px 8px; border-radius: 10px; border: 1px solid #8fbc8f;">きろくの自動保存：未連携</span>
+    </div>
+    <button class="icon-btn" onclick="toggleMenu()">✕</button>
+</div>
+<div class="menu-content">
+    <div id="google-sync-section" style="margin: 10px 15px 20px 15px; padding: 15px; background: rgba(143, 188, 143, 0.1); border-radius: 12px; border: 1px dashed #8fbc8f;">
+        <p style="font-size: 0.85rem; margin-bottom: 5px; color: var(--text-color); font-weight: bold;">🌱 きろくの自動保存</p>
+        <p style="font-size: 0.7rem; color: #666; margin-bottom: 12px; line-height: 1.4;">
+            Googleアカウントで連携すると、お庭のデータをドライブに自動でバックアップします。
+        </p>
+        <button id="auth-btn" onclick="handleAuthClick()" style="background: #8fbc8f; color: white; border: none; padding: 8px 0; border-radius: 20px; cursor: pointer; font-size: 0.8rem; width: 100%; font-family: inherit;">
+            Googleアカウントで連携する
+        </button>
+        <p id="sync-info" style="font-size: 0.7rem; color: #8fbc8f; margin-top: 5px; display: none; text-align: center;">✅ 連携済み：データは守られています</p>
+    </div>
+    <a href="#" onclick="toggleMenu(); switchTab('log'); return false;">✏️ きろく一覧</a>
             <a href="#" onclick="toggleMenu(); switchTab('score'); return false;">💓 ココロスコア</a>
             <a href="#" onclick="toggleMenu(); openBackupModal(); return false;">📮 きろくの書き出し</a>
             <a href="#" onclick="toggleMenu(); openFeedbackModal(); return false;">✉️ フィードバックを送る</a>
@@ -2215,6 +2231,110 @@ https://kokoro-farm.netlify.app/</textarea>
             btn.style.color = "#ffb6c1";
         }
     }
+
+/* --- Google Drive Sync System (最終調整版) --- */
+const CLIENT_ID = '632242398963-jgdndjomh29anfgeqk8v6r54u1ho5usa.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+let tokenClient;
+let accessToken = null;
+
+// ページ読み込み時に連携状態をチェック
+window.addEventListener('load', () => {
+    gsiInit();
+    if (localStorage.getItem('google_sync_enabled') === 'true') {
+        // 以前連携していたら、自動で再接続を試みる（1秒後に実行）
+        setTimeout(() => handleAuthClick(true), 1000); 
+    }
+});
+
+function gsiInit() {
+    if (typeof google === 'undefined') return; // ライブラリ読み込み待ち
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (tokenResponse) => {
+            accessToken = tokenResponse.access_token;
+            updateSyncUI(true); // UIを「連携済み」にする
+            saveToDrive();      // 連携直後に一回保存
+            localStorage.setItem('google_sync_enabled', 'true');
+        },
+    });
+}
+
+function handleAuthClick(isAuto = false) {
+    if (isAuto) {
+        tokenClient.requestAccessToken({prompt: ''});
+    } else {
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    }
+}
+
+// ★ここが「調整」した部分です！
+function updateSyncUI(isSynced) {
+    const statusTag = document.getElementById('menu-sync-status');
+    const authBtn = document.getElementById('auth-btn');
+    const syncInfo = document.getElementById('sync-info');
+
+    if (isSynced && statusTag && authBtn && syncInfo) {
+        statusTag.innerText = "きろくの自動保存：連携済み";
+        statusTag.style.color = "#fff";
+        statusTag.style.background = "#8fbc8f";
+        authBtn.style.display = "none";
+        syncInfo.style.display = "block";
+    }
+}
+
+// Googleドライブへの保存処理
+async function saveToDrive() {
+    if (!accessToken) return;
+
+    try {
+        // 既存のファイルがあるか確認
+        const searchResponse = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='mebuki_data.json' and parents in 'appDataFolder'&spaces=appDataFolder`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const searchResult = await searchResponse.json();
+        const existingFile = searchResult.files && searchResult.files[0];
+
+        const metadata = {
+            name: 'mebuki_data.json',
+            mimeType: 'application/json',
+            parents: ['appDataFolder']
+        };
+
+        const fileContent = JSON.stringify(appData);
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', new Blob([fileContent], { type: 'application/json' }));
+
+        let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+        let method = 'POST';
+
+        if (existingFile) {
+            url = `https://www.googleapis.com/upload/drive/v3/files/${existingFile.id}?uploadType=multipart`;
+            method = 'PATCH';
+        }
+
+        await fetch(url, {
+            method: method,
+            headers: { 'Authorization': `Bearer ${accessToken}` },
+            body: form
+        });
+        console.log("Google Driveにバックアップ完了！");
+        localStorage.setItem('lastDriveSync', new Date().getTime());
+    } catch (e) {
+        console.error("同期エラー:", e);
+    }
+}
+
+// 1時間に1回の自動チェック（24時間経過で保存）
+setInterval(() => {
+    const lastSync = localStorage.getItem('lastDriveSync');
+    const now = new Date().getTime();
+    if (accessToken && lastSync && (now - lastSync > 24 * 60 * 60 * 1000)) {
+        saveToDrive();
+    }
+}, 3600000);
 
 </script>
 </body>
