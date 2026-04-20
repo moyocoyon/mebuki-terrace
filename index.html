@@ -2232,76 +2232,85 @@ https://kokoro-farm.netlify.app/</textarea>
         }
     }
 
-/* --- Google Drive Sync System (最終調整版) --- */
+/* --- Google Drive Sync System (ログイン維持版) --- */
 const CLIENT_ID = '632242398963-jgdndjomh29anfgeqk8v6r54u1ho5usa.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 let tokenClient;
 let accessToken = null;
 
-// ページ読み込み時に連携状態をチェック
+// 1. ページ読み込み時に保存された合言葉（トークン）があるかチェック
 window.addEventListener('load', () => {
     gsiInit();
-    if (localStorage.getItem('google_sync_enabled') === 'true') {
-        // 以前連携していたら、自動で再接続を試みる（1秒後に実行）
-        setTimeout(() => handleAuthClick(true), 1000); 
+    const savedToken = localStorage.getItem('google_access_token');
+    if (savedToken) {
+        accessToken = savedToken;
+        updateSyncUI(true); // 連携済み状態にする
+        // 1.5秒後に、合言葉がまだ使えるか試すために一度保存してみる
+        setTimeout(saveToDrive, 1500);
     }
 });
 
 function gsiInit() {
-    if (typeof google === 'undefined') return; // ライブラリ読み込み待ち
+    if (typeof google === 'undefined') return;
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
         callback: (tokenResponse) => {
+            if (tokenResponse.error !== undefined) throw (tokenResponse);
+            
+            // 合言葉をブラウザの保存スペースに記憶する
             accessToken = tokenResponse.access_token;
-            updateSyncUI(true); // UIを「連携済み」にする
-            saveToDrive();      // 連携直後に一回保存
+            localStorage.setItem('google_access_token', accessToken);
             localStorage.setItem('google_sync_enabled', 'true');
+            
+            updateSyncUI(true);
+            saveToDrive();
         },
     });
 }
 
-function handleAuthClick(isAuto = false) {
-    if (isAuto) {
-        tokenClient.requestAccessToken({prompt: ''});
+function handleAuthClick() {
+    // 連携済みで合言葉があるなら、そのまま保存。なければログイン画面を出す。
+    if (accessToken) {
+        saveToDrive();
     } else {
         tokenClient.requestAccessToken({prompt: 'consent'});
     }
 }
 
-// ★ここが「調整」した部分です！
 function updateSyncUI(isSynced) {
     const statusTag = document.getElementById('menu-sync-status');
     const authBtn = document.getElementById('auth-btn');
     const syncInfo = document.getElementById('sync-info');
 
-    if (isSynced && statusTag && authBtn && syncInfo) {
-        statusTag.innerText = "きろくの自動保存：連携済み";
+    if (isSynced && statusTag) {
+        statusTag.innerText = "連携済み";
         statusTag.style.color = "#fff";
         statusTag.style.background = "#8fbc8f";
-        authBtn.style.display = "none";
-        syncInfo.style.display = "block";
+        if(authBtn) authBtn.style.display = "none";
+        if(syncInfo) syncInfo.style.display = "block";
     }
 }
 
-// Googleドライブへの保存処理
+// 実際の保存処理（これは以前のものを継続して使います）
 async function saveToDrive() {
     if (!accessToken) return;
 
     try {
-        // 既存のファイルがあるか確認
         const searchResponse = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='mebuki_data.json' and parents in 'appDataFolder'&spaces=appDataFolder`, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         const searchResult = await searchResponse.json();
+        
+        // もし合言葉の期限が切れていたらエラーになるので、その時は合言葉を消す
+        if (searchResult.error) {
+            localStorage.removeItem('google_access_token');
+            accessToken = null;
+            return;
+        }
+
         const existingFile = searchResult.files && searchResult.files[0];
-
-        const metadata = {
-            name: 'mebuki_data.json',
-            mimeType: 'application/json',
-            parents: ['appDataFolder']
-        };
-
+        const metadata = { name: 'mebuki_data.json', mimeType: 'application/json', parents: ['appDataFolder'] };
         const fileContent = JSON.stringify(appData);
         const form = new FormData();
         form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
@@ -2309,25 +2318,20 @@ async function saveToDrive() {
 
         let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
         let method = 'POST';
-
         if (existingFile) {
             url = `https://www.googleapis.com/upload/drive/v3/files/${existingFile.id}?uploadType=multipart`;
             method = 'PATCH';
         }
 
-        await fetch(url, {
-            method: method,
-            headers: { 'Authorization': `Bearer ${accessToken}` },
-            body: form
-        });
-        console.log("Google Driveにバックアップ完了！");
+        await fetch(url, { method: method, headers: { 'Authorization': `Bearer ${accessToken}` }, body: form });
+        console.log("バックアップ完了！");
         localStorage.setItem('lastDriveSync', new Date().getTime());
     } catch (e) {
-        console.error("同期エラー:", e);
+        console.error("同期失敗:", e);
     }
 }
 
-// 1時間に1回の自動チェック（24時間経過で保存）
+// 1時間に1回自動バックアップチェック
 setInterval(() => {
     const lastSync = localStorage.getItem('lastDriveSync');
     const now = new Date().getTime();
